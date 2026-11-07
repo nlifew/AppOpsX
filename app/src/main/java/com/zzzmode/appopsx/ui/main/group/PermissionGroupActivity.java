@@ -165,15 +165,14 @@ public class PermissionGroupActivity extends BaseActivity implements
 
   @Override
   public boolean onOptionsItemSelected(MenuItem item) {
-    switch (item.getItemId()) {
-      case android.R.id.home:
-        finish();
-        return true;
-      case R.id.action_with_net:
-        return true;
-      default:
-        return super.onOptionsItemSelected(item);
+    int id = item.getItemId();
+    if (id == android.R.id.home) {
+      finish();
+      return true;
+    } else if (id == R.id.action_with_net) {
+      return true;
     }
+    return super.onOptionsItemSelected(item);
   }
 
   @Override
@@ -190,13 +189,11 @@ public class PermissionGroupActivity extends BaseActivity implements
         @Override
         public boolean onMenuItemClick(MenuItem item) {
           item.setChecked(!item.isChecked());
-          switch (item.getItemId()){
-            case R.id.action_with_net:
-              sp.edit().putBoolean("key_g_show_net", item.isChecked()).apply();
-              break;
-            case R.id.action_show_ignored:
-              sp.edit().putBoolean("key_g_show_ignored", item.isChecked()).apply();
-              break;
+          int id = item.getItemId();
+          if (id == R.id.action_with_net) {
+            sp.edit().putBoolean("key_g_show_net", item.isChecked()).apply();
+          } else if (id == R.id.action_show_ignored) {
+            sp.edit().putBoolean("key_g_show_ignored", item.isChecked()).apply();
           }
           invalidateOptionsMenu();
           return true;
@@ -278,13 +275,13 @@ public class PermissionGroupActivity extends BaseActivity implements
 
   @Override
   public boolean onMenuItemClick(MenuItem item) {
-    switch (item.getItemId()) {
-      case R.id.action_close_all:
-        changeAll(AppOpsManager.MODE_IGNORED);
-        return true;
-      case R.id.action_open_all:
-        changeAll(AppOpsManager.MODE_ALLOWED);
-        return true;
+    int id = item.getItemId();
+    if (id == R.id.action_close_all) {
+      changeAll(AppOpsManager.MODE_IGNORED);
+      return true;
+    } else if (id == R.id.action_open_all) {
+      changeAll(AppOpsManager.MODE_ALLOWED);
+      return true;
     }
     return super.onContextItemSelected(item);
   }

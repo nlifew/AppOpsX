@@ -153,25 +153,22 @@ public class AppPermissionActivity extends BaseActivity implements IPermView {
 
   @Override
   public boolean onOptionsItemSelected(MenuItem item) {
-    switch (item.getItemId()) {
-      case android.R.id.home:
-        finish();
-        return true;
-      case R.id.action_reset:
-        mPresenter.reset();
-        return true;
-      case R.id.action_hide_perm:
-        showHidePerms();
-        return true;
-      case R.id.action_open_all:
-        changeAll(AppOpsManager.MODE_ALLOWED);
-        break;
-      case R.id.action_close_all:
-        changeAll(AppOpsManager.MODE_IGNORED);
-        break;
-      case R.id.action_app_info:
-        startAppinfo();
-        break;
+    int id = item.getItemId();
+    if (id == android.R.id.home) {
+      finish();
+      return true;
+    } else if (id == R.id.action_reset) {
+      mPresenter.reset();
+      return true;
+    } else if (id == R.id.action_hide_perm) {
+      showHidePerms();
+      return true;
+    } else if (id == R.id.action_open_all) {
+      changeAll(AppOpsManager.MODE_ALLOWED);
+    } else if (id == R.id.action_close_all) {
+      changeAll(AppOpsManager.MODE_IGNORED);
+    } else if (id == R.id.action_app_info) {
+      startAppinfo();
     }
     return super.onOptionsItemSelected(item);
   }

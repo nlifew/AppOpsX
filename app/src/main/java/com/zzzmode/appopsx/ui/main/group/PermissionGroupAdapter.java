@@ -193,20 +193,18 @@ class PermissionGroupAdapter extends
 //      int childPosition = RecyclerViewExpandableItemManager
 //          .getPackedPositionChild(expandablePosition);
 
-      switch (v.getId()) {
-        case R.id.layout_group_item:
-          // toggle expanded/collapsed
-          if (mExpandableItemManager.isGroupExpanded(groupPosition)) {
-            mExpandableItemManager.collapseGroup(groupPosition);
-          } else {
-            mExpandableItemManager.expandGroup(groupPosition);
-          }
-          break;
-        case R.id.img_menu_ups:
-          if (mOnGroupOtherClickListener != null) {
-            mOnGroupOtherClickListener.onOtherClick(groupPosition, v);
-          }
-          break;
+      int id = v.getId();
+      if (id == R.id.layout_group_item) {
+        // toggle expanded/collapsed
+        if (mExpandableItemManager.isGroupExpanded(groupPosition)) {
+          mExpandableItemManager.collapseGroup(groupPosition);
+        } else {
+          mExpandableItemManager.expandGroup(groupPosition);
+        }
+      } else if (id == R.id.img_menu_ups) {
+        if (mOnGroupOtherClickListener != null) {
+          mOnGroupOtherClickListener.onOtherClick(groupPosition, v);
+        }
       }
     }
 

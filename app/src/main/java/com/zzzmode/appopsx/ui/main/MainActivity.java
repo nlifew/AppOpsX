@@ -175,22 +175,21 @@ public class MainActivity extends BaseActivity implements SearchView.OnQueryText
 
   @Override
   public boolean onOptionsItemSelected(MenuItem item) {
-    switch (item.getItemId()) {
-      case R.id.action_setting:
-        openSetting();
-        return true;
-      case R.id.action_permission_sort:
-        openSortPermission();
-        return true;
-      case R.id.action_backup:
-        openConfigPerms();
-        return true;
-      case R.id.action_stats:
-        openUsageStats();
-        return true;
-      default:
-        return super.onOptionsItemSelected(item);
+    int id = item.getItemId();
+    if (id == R.id.action_setting) {
+      openSetting();
+      return true;
+    } else if (id == R.id.action_permission_sort) {
+      openSortPermission();
+      return true;
+    } else if (id == R.id.action_backup) {
+      openConfigPerms();
+      return true;
+    } else if (id == R.id.action_stats) {
+      openUsageStats();
+      return true;
     }
+    return super.onOptionsItemSelected(item);
   }
 
   @Override
