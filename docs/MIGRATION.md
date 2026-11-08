@@ -173,10 +173,19 @@ export JAVA_HOME=".../Android Studio/jbr"
    - `ReflectUtils.opsConvert` 改为调用 `PackageOps` 和 `OpEntry` 的 `@SystemApi` getter（`getLastAccessTime(OP_FLAGS_ALL)` 等），不再读私有字段。旧代码在找不到 `getTime()` 时会把 `null` 拆箱成 `long` 并抛 NPE；字段缓存只按字段名做 key，也不记录找不到的字段，每个应用的每条记录都要重新抛一次异常；
    - 去掉 LineageOS 的 `mAllowedCount` 分支：Lineage 在 Android 13 上已经没有这个字段。
 
-**已确认、暂不处理**
+以上两项已在 Xiaomi 13 上验证：单个应用的权限列表、“应用权限”页面都正常显示。
 
-- `FixCompat` 在 API 28 及以上使用从 Android 9 抄来的写死的表。op 编号只会往后追加，所以这张表覆盖到的部分仍然正确，只是缺少 Android 9 之后新增的 op。改成运行时读取仍按原计划做。
-- “应用权限”页面加载要 8 秒以上。除了上面的反射异常，主要是每个应用都要执行两次 iptables 命令来查询联网状态。可以改成一次 `iptables-save` 后统一解析。
+**后续完成的**
+
+- **op 表改为运行时读取**：`OpsxService` 启动时通过 `_NUM_OP`、`opToName`、`opToSwitch`、`opToPermission` 读取当前系统的表，自己使用，并通过新增的 `IOpsxService.getOpsTable()` 交给 app（app 进程受隐藏 API 限制，读不了这些成员）。连上服务之前，app 仍使用内置的 Android 9 表；表被替换后，由它派生的缓存（`Helper.getLocalOpEntryInfos`、`remote/Helper.permissionToCode`、`OpEntryInfo`）会重建。Xiaomi 13 上读到 121 个 op，旧表只有 78 个。
+- **iptables 查询**：每条规则链只执行一次 `iptables -S`，再按 uid 查表，不再对每个应用执行两次 `iptables -C`。
+- **`IAppOpsService` 桩**：只保留实际用到的 5 个方法（都在 `AppOpsHandler` 里调用），按 Android 13 核对过签名。删掉了没人调用、而且签名从 Android 11 起就不对的 `noteOperation` 等方法。
+
+**剩余**
+
+- 在 Android 14、15、16 上测试（目前只在 Android 13 上验证过）
+- 每个页面打开后都会被系统立即重建一次（日志中的 `Schedule relaunch activity`）。原因是 `BaseActivity` 在 `super.onCreate()` 之后才调用 `AppCompatDelegate.setDefaultNightMode()`。不影响功能，但会让打开页面多花一次初始化的时间
+- “自动忽略权限模板”列表里会有重复项：多个 op 共用一个开关时，它们会以同一个开关 op 各出现一次。这在 Android 9 的表上就存在，op 变多后更明显
 
 ### 可选：现代化
 
@@ -189,7 +198,7 @@ Kotlin、Material 3、用协程替换 RxJava 等，等功能稳定后再考虑�
 | 1 修复构建 | 已完成（构建通过，待设备验证） |
 | 2 SDK 适配 | 已完成（构建通过，待设备验证；新装应用弹窗见第 5 节） |
 | 3 接入 Shizuku | 已完成（Xiaomi 13 / Android 13 上已能通过 Shizuku root 模式拉起服务；核心功能依赖阶段 4） |
-| 4 AppOps 适配与测试 | 进行中 |
+| 4 AppOps 适配与测试 | 核心功能已在 Android 13 上验证；待在 14、15、16 上测试 |
 | 新装应用弹窗 | 方案已定，阶段 4 之后实现 |
 
 ## 5. 新装应用弹窗（方案已定，阶段 4 之后实现）
