@@ -1,24 +1,14 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
 
-    <application android:allowBackup="true" android:label="@string/app_name"
-        android:supportsRtl="true">
-
-
+    <application>
+        <!-- Shizuku 通过这个 provider 把它的 binder 交给 app；权限要求是 Shizuku 文档规定的写法 -->
         <provider
-          android:authorities="com.zzzmode.appopsx.provider.local"
-          android:name="com.zzzmode.appopsx.OpsxConfigProvider"
-          android:exported="true"
-          android:enabled="true"
-          />
-
-        <receiver android:name="com.zzzmode.appopsx.ServerStatusChangeReceiver" android:exported="true" android:enabled="true">
-            <intent-filter>
-                <action android:name="com.zzzmode.appopsx.action.SERVER_STARTED"/>
-                <action android:name="com.zzzmode.appopsx.action.SERVER_CONNECTED"/>
-                <action android:name="com.zzzmode.appopsx.action.SERVER_DISCONNECTED"/>
-                <action android:name="com.zzzmode.appopsx.action.SERVER_STOPED"/>
-            </intent-filter>
-        </receiver>
+            android:name="rikka.shizuku.ShizukuProvider"
+            android:authorities="${applicationId}.shizuku"
+            android:enabled="true"
+            android:exported="true"
+            android:multiprocess="false"
+            android:permission="android.permission.INTERACT_ACROSS_USERS_FULL" />
     </application>
 
 </manifest>

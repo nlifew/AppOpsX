@@ -1,3 +1,4 @@
+// 通过 Shizuku UserService 以 shell/root 身份运行 OpsxService，并向 app 提供 OpsxManager
 plugins {
     alias(libs.plugins.android.library)
 }
@@ -8,51 +9,21 @@ android {
 
     defaultConfig {
         minSdk = 33
+        consumerProguardFiles("consumer-rules.pro")
     }
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_17
         targetCompatibility = JavaVersion.VERSION_17
     }
     buildFeatures {
+        aidl = true
         buildConfig = true
     }
 }
 
-val serverDex by configurations.creating {
-    isCanBeConsumed = false
-    isCanBeResolved = true
-}
-
 dependencies {
-    api(project(":AdbLib"))
     api(project(":opsxlib"))
+    api(libs.shizuku.api)
+    implementation(libs.shizuku.provider)
     compileOnly(project(":apicompat"))
-    serverDex(project(":opsxlib", "serverDexElements"))
-}
-
-// 把 opsxlib 生成的服务端 dex jar 放进 assets
-abstract class CopyServerDex : DefaultTask() {
-    @get:InputFiles
-    abstract val dexFiles: ConfigurableFileCollection
-
-    @get:OutputDirectory
-    abstract val outputDir: DirectoryProperty
-
-    @TaskAction
-    fun copy() {
-        val dir = outputDir.get().asFile
-        dir.deleteRecursively()
-        dir.mkdirs()
-        dexFiles.forEach { it.copyTo(File(dir, it.name)) }
-    }
-}
-
-val copyServerDex = tasks.register<CopyServerDex>("copyServerDex") {
-    dexFiles.from(serverDex)
-}
-
-androidComponents {
-    onVariants { variant ->
-        variant.sources.assets?.addGeneratedSourceDirectory(copyServerDex, CopyServerDex::outputDir)
-    }
 }

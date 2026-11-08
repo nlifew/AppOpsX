@@ -50,9 +50,6 @@ android {
     buildFeatures {
         buildConfig = true
     }
-    androidResources {
-        noCompress += listOf("jar", "sh")
-    }
     lint {
         abortOnError = false
     }

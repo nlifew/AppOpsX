@@ -440,7 +440,7 @@ public class Helper {
         if(uid == 0){
           installedPackages = packageManager.getInstalledPackages(0);
         }else {
-          installedPackages = AppOpsx.getInstance(context).getApiSupporter().getInstalledPackages(0,uid);
+          installedPackages = AppOpsx.getInstance(context).getInstalledPackages(0, uid);
         }
 
 
@@ -1162,16 +1162,6 @@ public class Helper {
     });
   }
 
-  public static Single<Boolean> restartServer(Context context) {
-    return SingleJust.just(context).map(new Function<Context, Boolean>() {
-      @Override
-      public Boolean apply(@NonNull Context context) throws Exception {
-        AppOpsx.getInstance(context).getApiSupporter().restartServer(context);
-        return true;
-      }
-    });
-  }
-
   public static Function<List<AppInfo>, List<AppInfo>> getSortComparator(final Context context) {
     return new Function<List<AppInfo>, List<AppInfo>>() {
       @Override
@@ -1314,7 +1304,7 @@ public class Helper {
     return Single.create(new SingleOnSubscribe<List<UserInfo>>() {
       @Override
       public void subscribe(SingleEmitter<List<UserInfo>> emitter) throws Exception {
-        emitter.onSuccess(AppOpsx.getInstance(context).getApiSupporter().getUsers(excludeDying));
+        emitter.onSuccess(AppOpsx.getInstance(context).getUsers(excludeDying));
       }
     });
   }

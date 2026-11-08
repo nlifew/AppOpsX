@@ -4,11 +4,11 @@ import android.app.AppOpsManager;
 import android.content.Context;
 import android.preference.PreferenceManager;
 import android.util.SparseIntArray;
-import com.zzzmode.appopsx.OpsxManager;
 import com.zzzmode.appopsx.R;
 import com.zzzmode.appopsx.common.OpsResult;
 import com.zzzmode.appopsx.ui.core.AppOpsx;
 import com.zzzmode.appopsx.ui.core.Helper;
+import com.zzzmode.appopsx.ui.core.ShizukuHelper;
 import com.zzzmode.appopsx.ui.model.AppInfo;
 import com.zzzmode.appopsx.ui.model.OpEntryInfo;
 import io.reactivex.Observable;
@@ -18,8 +18,6 @@ import io.reactivex.annotations.NonNull;
 import io.reactivex.disposables.Disposable;
 import io.reactivex.observers.ResourceObserver;
 import io.reactivex.schedulers.Schedulers;
-import java.io.IOException;
-import java.net.ConnectException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -109,31 +107,11 @@ class PermPresenter {
   }
 
   private String getHandleError(Throwable e) {
-    OpsxManager.Config config = AppOpsx.getInstance(context).getConfig();
-    String msg = "";
-    String errorMsg = e.getMessage();
-    if (config.useAdb) {
-      //adb
-      if (e instanceof ConnectException) {
-        msg = context.getString(R.string.error_no_adb, config.adbPort);
-      }
-    } else {
-      //root
-      if (e instanceof IOException) {
-        if (errorMsg.contains("error=13")) {
-          msg = context.getString(R.string.error_no_su);
-        }
-      } else if (e instanceof RuntimeException) {
-        if (errorMsg.contains("RootAccess denied")) {
-          msg = context.getString(R.string.error_su_timeout);
-        } else if (errorMsg.contains("connect fail")) {
-          msg = context.getString(R.string.error_connect_fail);
-        }
-      }
-
+    String msg = ShizukuHelper.errorMessage(context, e);
+    if (msg != null) {
+      return msg;
     }
-
-    return context.getString(R.string.error_msg, msg, errorMsg);
+    return context.getString(R.string.error_msg, "", e.getMessage());
   }
 
   void setAutoDisabled(boolean autoDisabled) {

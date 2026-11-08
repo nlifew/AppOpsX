@@ -44,5 +44,4 @@ rootProject.name = "AppOpsX"
 include(":app")
 include(":opsxlib")
 include(":opsxpro")
-include(":AdbLib")
 include(":apicompat")

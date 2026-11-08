@@ -40,7 +40,7 @@ public class OpsResult implements Parcelable {
   }
 
   protected OpsResult(Parcel in) {
-    this.exception = (Exception) in.readSerializable();
+    this.exception = (Throwable) in.readSerializable();
     this.list = in.createTypedArrayList(PackageOps.CREATOR);
   }
 

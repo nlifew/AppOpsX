@@ -24,7 +24,7 @@ public interface IPackageManager {
 
   ApplicationInfo getApplicationInfo(String packageName, int flags ,int userId);
 
-  ParceledListSlice getInstalledPackages(int flags, int userId);
+  ParceledListSlice getInstalledPackages(long flags, int userId);
 
   int getPackageUid(String packageName,int flags , int userId);
 

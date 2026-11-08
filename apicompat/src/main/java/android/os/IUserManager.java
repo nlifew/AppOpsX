@@ -6,7 +6,7 @@ import java.util.List;
 public interface IUserManager {
   UserInfo getPrimaryUser();
 
-  List<UserInfo> getUsers(boolean excludeDying);
+  List<UserInfo> getUsers(boolean excludePartial, boolean excludeDying, boolean excludePreCreated);
 
   int getManagedProfileBadge(int userId);
 

@@ -3,6 +3,7 @@ package com.zzzmode.appopsx.ui.main;
 import android.app.SearchManager;
 import android.content.Context;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.content.pm.UserInfo;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
@@ -26,6 +27,7 @@ import com.zzzmode.appopsx.ui.BaseActivity;
 import com.zzzmode.appopsx.ui.core.AppOpsx;
 import com.zzzmode.appopsx.ui.core.Helper;
 import com.zzzmode.appopsx.ui.core.LocalImageLoader;
+import com.zzzmode.appopsx.ui.core.ShizukuHelper;
 import com.zzzmode.appopsx.ui.core.Users;
 import com.zzzmode.appopsx.ui.main.backup.BackupActivity;
 import com.zzzmode.appopsx.ui.main.group.PermissionGroupActivity;
@@ -39,6 +41,7 @@ import io.reactivex.observers.ResourceObserver;
 import io.reactivex.schedulers.Schedulers;
 import java.util.ArrayList;
 import java.util.List;
+import rikka.shizuku.Shizuku;
 
 
 public class MainActivity extends BaseActivity implements SearchView.OnQueryTextListener {
@@ -55,6 +58,25 @@ public class MainActivity extends BaseActivity implements SearchView.OnQueryText
   private SearchHandler mSearchHandler;
 
   private View containerApp, containerSearch;
+
+  private final Shizuku.OnBinderReceivedListener mShizukuBinderListener =
+      new Shizuku.OnBinderReceivedListener() {
+        @Override
+        public void onBinderReceived() {
+          ShizukuHelper.requestPermissionIfNeeded();
+        }
+      };
+
+  private final Shizuku.OnRequestPermissionResultListener mShizukuPermissionListener =
+      new Shizuku.OnRequestPermissionResultListener() {
+        @Override
+        public void onRequestPermissionResult(int requestCode, int grantResult) {
+          if (requestCode == ShizukuHelper.REQUEST_CODE
+              && grantResult == PackageManager.PERMISSION_GRANTED) {
+            loadUsers();
+          }
+        }
+      };
 
   @Override
   protected void onCreate(Bundle savedInstanceState) {
@@ -87,6 +109,9 @@ public class MainActivity extends BaseActivity implements SearchView.OnQueryText
 
     adapter = new MainListAdapter();
     recyclerView.setAdapter(adapter);
+
+    Shizuku.addRequestPermissionResultListener(mShizukuPermissionListener);
+    Shizuku.addBinderReceivedListenerSticky(mShizukuBinderListener);
 
     loadData(true);
     mSwipeRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
@@ -293,6 +318,8 @@ public class MainActivity extends BaseActivity implements SearchView.OnQueryText
 
   @Override
   protected void onDestroy() {
+    Shizuku.removeBinderReceivedListener(mShizukuBinderListener);
+    Shizuku.removeRequestPermissionResultListener(mShizukuPermissionListener);
     super.onDestroy();
   }
 

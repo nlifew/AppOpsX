@@ -2,8 +2,6 @@ package com.zzzmode.appopsx.ui.main;
 
 import android.annotation.SuppressLint;
 import android.app.Activity;
-import android.content.ClipData;
-import android.content.ClipboardManager;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.DialogInterface.OnClickListener;
@@ -19,7 +17,6 @@ import android.widget.Toast;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.widget.Toolbar;
-import androidx.fragment.app.DialogFragment;
 import androidx.preference.Preference;
 import androidx.preference.PreferenceFragmentCompat;
 import androidx.preference.PreferenceGroup;
@@ -32,8 +29,8 @@ import com.zzzmode.appopsx.ui.BaseActivity;
 import com.zzzmode.appopsx.ui.core.AppOpsx;
 import com.zzzmode.appopsx.ui.core.Helper;
 import com.zzzmode.appopsx.ui.core.LangHelper;
+import com.zzzmode.appopsx.ui.core.ShizukuHelper;
 import com.zzzmode.appopsx.ui.model.OpEntryInfo;
-import com.zzzmode.appopsx.ui.widget.NumberPickerPreference;
 import io.reactivex.SingleEmitter;
 import io.reactivex.SingleObserver;
 import io.reactivex.SingleOnSubscribe;
@@ -42,6 +39,7 @@ import io.reactivex.disposables.Disposable;
 import io.reactivex.internal.operators.single.SingleJust;
 import io.reactivex.schedulers.Schedulers;
 import java.util.List;
+import rikka.shizuku.Shizuku;
 
 /**
  * Created by zl on 2017/1/16.
@@ -85,7 +83,15 @@ public class SettingsActivity extends BaseActivity {
       Preference.OnPreferenceClickListener {
 
     private Preference mPrefAppSort;
-    private Preference mUseAdb;
+    private Preference mShizukuStatus;
+
+    private final Shizuku.OnRequestPermissionResultListener mShizukuPermissionListener =
+        new Shizuku.OnRequestPermissionResultListener() {
+          @Override
+          public void onRequestPermissionResult(int requestCode, int grantResult) {
+            updateShizukuStatus();
+          }
+        };
 
     @Override
     public void onCreatePreferences(Bundle savedInstanceState, String rootKey) {
@@ -94,8 +100,9 @@ public class SettingsActivity extends BaseActivity {
       findPreference("ignore_premission").setOnPreferenceClickListener(this);
       findPreference("show_sysapp").setOnPreferenceClickListener(this);
 
-      mUseAdb = findPreference("use_adb");
-      mUseAdb.setOnPreferenceClickListener(this);
+      mShizukuStatus = findPreference("shizuku_status");
+      mShizukuStatus.setOnPreferenceClickListener(this);
+      Shizuku.addRequestPermissionResultListener(mShizukuPermissionListener);
 
       findPreference("allow_bg_remote").setOnPreferenceClickListener(this);
       findPreference("project").setOnPreferenceClickListener(this);
@@ -103,8 +110,6 @@ public class SettingsActivity extends BaseActivity {
       findPreference("opensource_licenses").setOnPreferenceClickListener(this);
       findPreference("help").setOnPreferenceClickListener(this);
       findPreference("translate").setOnPreferenceClickListener(this);
-
-      findPreference("shell_start").setOnPreferenceClickListener(this);
 
       Preference version = findPreference("version");
       version.setSummary(BuildConfig.VERSION_NAME);
@@ -177,33 +182,33 @@ public class SettingsActivity extends BaseActivity {
               return true;
             }
           });
+    }
 
-      final NumberPickerPreference adbPortPreference = (NumberPickerPreference) findPreference(
-          "use_adb_port");
-      adbPortPreference.setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener() {
-        @Override
-        public boolean onPreferenceChange(Preference preference, Object newValue) {
-          if (newValue instanceof Integer) {
-            mUseAdb.setSummary(getString(R.string.use_adb_mode_summary, (int) newValue));
-          }
-          return true;
-        }
-      });
+    @Override
+    public void onResume() {
+      super.onResume();
+      updateShizukuStatus();
+    }
 
-      mUseAdb.setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener() {
-        @Override
-        public boolean onPreferenceChange(Preference preference, Object newValue) {
-          if (newValue instanceof Boolean) {
-            adbPortPreference.setVisible(((Boolean) newValue));
-          }
-          return true;
-        }
-      });
+    @Override
+    public void onDestroy() {
+      Shizuku.removeRequestPermissionResultListener(mShizukuPermissionListener);
+      super.onDestroy();
+    }
 
-      mUseAdb.setSummary(getString(R.string.use_adb_mode_summary, adbPortPreference.getValue()));
+    private void updateShizukuStatus() {
+      if (mShizukuStatus != null && getContext() != null) {
+        mShizukuStatus.setSummary(ShizukuHelper.describe(getContext()));
+      }
+    }
 
-      adbPortPreference.setVisible(
-          PreferenceManager.getDefaultSharedPreferences(getContext()).getBoolean("use_adb", false));
+    /** 未运行时打开 Shizuku 主页，已运行但未授权时请求授权 */
+    private void onShizukuStatusClick() {
+      if (!ShizukuHelper.isRunning()) {
+        startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse(ShizukuHelper.SHIZUKU_URL)));
+      } else if (!ShizukuHelper.isGranted() && !ShizukuHelper.requestPermissionIfNeeded()) {
+        Toast.makeText(getContext(), R.string.shizuku_grant_in_app, Toast.LENGTH_LONG).show();
+      }
     }
 
 
@@ -235,19 +240,6 @@ public class SettingsActivity extends BaseActivity {
           super.onPreferenceHierarchyChange(preference);
         }
       };
-    }
-
-    @Override
-    public void onDisplayPreferenceDialog(Preference preference) {
-      if (preference instanceof NumberPickerPreference) {
-        DialogFragment fragment = NumberPickerPreference.
-            NumberPickerPreferenceDialogFragmentCompat.newInstance(preference.getKey());
-        fragment.setTargetFragment(this, 0);
-        fragment.show(getFragmentManager(),
-            "NumberPickerPreferenceDialogFragment");
-      } else {
-        super.onDisplayPreferenceDialog(preference);
-      }
     }
 
     private void closeServer() {
@@ -474,22 +466,6 @@ public class SettingsActivity extends BaseActivity {
       }
     }
 
-    private void showShellStart(){
-      AlertDialog.Builder builder =
-          new AlertDialog.Builder(getActivity());
-      builder.setMessage(getString(R.string.shell_cmd_help,getString(R.string.shell_cmd)));
-      builder.setPositiveButton(android.R.string.copy, new OnClickListener() {
-        @Override
-        public void onClick(DialogInterface dialog, int which) {
-          ClipboardManager clipboardManager = (ClipboardManager) getContext().getSystemService(Context.CLIPBOARD_SERVICE);
-          clipboardManager.setPrimaryClip(ClipData.newPlainText(null, getString(R.string.shell_cmd)));
-          dialog.dismiss();
-          Toast.makeText(getContext(),R.string.copied_hint,Toast.LENGTH_SHORT).show();
-        }
-      });
-      builder.create().show();
-    }
-
     @Override
     public boolean onPreferenceClick(Preference preference) {
       String key = preference.getKey();
@@ -508,9 +484,9 @@ public class SettingsActivity extends BaseActivity {
       } else if ("pref_app_language".equals(key)) {
 
         showLanguageDialog(preference);
-      } else if ("shell_start".equals(key)){
+      } else if ("shizuku_status".equals(key)) {
 
-        showShellStart();
+        onShizukuStatusClick();
       }
       return false;
     }
