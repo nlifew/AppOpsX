@@ -19,7 +19,6 @@ import android.graphics.drawable.Drawable;
 import android.graphics.drawable.Icon;
 import android.preference.PreferenceManager;
 import android.text.TextUtils;
-import android.util.SparseArray;
 import android.util.SparseIntArray;
 import androidx.core.text.BidiFormatter;
 import androidx.core.util.Pair;
@@ -1090,8 +1089,6 @@ public class Helper {
   }
 
 
-  private static final SparseArray<OpEntryInfo> sOpEntryInfo = new SparseArray<>();
-  private static final SparseIntArray sAllOps = new SparseIntArray();
   private static final List<OpEntryInfo> sOpEntryInfoList = new ArrayList<>();
 
   /** 构建缓存时用的 op 表；连上服务后表会被换成系统实际的表，这时要重建缓存 */
@@ -1100,8 +1097,6 @@ public class Helper {
   public static synchronized List<OpEntryInfo> getLocalOpEntryInfos(Context context) {
     String[] sOpNames = FixCompat.sOpNames();
     if (sOpNames != sOpEntryInfoSource) {
-      sOpEntryInfo.clear();
-      sAllOps.clear();
       sOpEntryInfoList.clear();
       sOpEntryInfoSource = sOpNames;
     }
@@ -1128,8 +1123,6 @@ public class Helper {
             opEntryInfo.opPermsLab = opEntryInfo.opName;
           }
         }
-        sOpEntryInfo.put(entry.getOp(), opEntryInfo);
-        sAllOps.put(entry.getOp(), entry.getOp());
         sOpEntryInfoList.add(opEntryInfo);
       }
     }

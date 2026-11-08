@@ -12,12 +12,13 @@ import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.text.TextUtils;
 import android.util.SparseBooleanArray;
+import android.util.SparseIntArray;
 import android.view.MenuItem;
 import android.widget.Toast;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
-import androidx.appcompat.widget.Toolbar;
 import androidx.appcompat.app.AppCompatDelegate;
+import androidx.appcompat.widget.Toolbar;
 import androidx.preference.Preference;
 import androidx.preference.PreferenceFragmentCompat;
 import androidx.preference.PreferenceGroup;
@@ -39,6 +40,7 @@ import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.disposables.Disposable;
 import io.reactivex.internal.operators.single.SingleJust;
 import io.reactivex.schedulers.Schedulers;
+import java.util.ArrayList;
 import java.util.List;
 import rikka.shizuku.Shizuku;
 
@@ -273,26 +275,39 @@ public class SettingsActivity extends BaseActivity {
       AlertDialog.Builder builder =
           new AlertDialog.Builder(getActivity());
       builder.setTitle(R.string.auto_ignore_permission_title);
+      // 列表下标 i 就是 op 编号，opEntry 里存的是它的开关 op。多个 op 共用一个开关时，
+      // 对话框里只显示一行（用开关 op 自己的名称），保存时展开成组内所有 op，
+      // 这样保存的格式（op 编号列表）和以前一致，已有的模板和 default_ignored 都不受影响
       List<OpEntryInfo> localOpEntryInfos = Helper.getLocalOpEntryInfos(getActivity());
-      int size = localOpEntryInfos.size();
-      CharSequence[] items = new CharSequence[size];
-
-      boolean[] selected = new boolean[size];
-
-      for (int i = 0; i < size; i++) {
-        OpEntryInfo opEntryInfo = localOpEntryInfos.get(i);
-        items[i] = opEntryInfo.opPermsLab;
-        selected[i] = false; //默认关闭
+      final List<List<Integer>> rows = new ArrayList<>();
+      List<CharSequence> labels = new ArrayList<>();
+      SparseIntArray switchToRow = new SparseIntArray();
+      for (int op = 0; op < localOpEntryInfos.size(); op++) {
+        OpEntryInfo opEntryInfo = localOpEntryInfos.get(op);
+        int switchOp = opEntryInfo.opEntry.getOp();
+        int row = switchToRow.get(switchOp, -1);
+        if (row < 0) {
+          row = rows.size();
+          switchToRow.put(switchOp, row);
+          rows.add(new ArrayList<Integer>());
+          labels.add(opEntryInfo.opPermsLab);
+        }
+        rows.get(row).add(op);
+        if (op == switchOp) {
+          labels.set(row, opEntryInfo.opPermsLab);
+        }
       }
+      CharSequence[] items = labels.toArray(new CharSequence[0]);
 
-      initCheckd(selected);
+      boolean[] selected = new boolean[rows.size()];
+      initCheckd(rows, selected);
 
       final SparseBooleanArray choiceResult = new SparseBooleanArray();
       for (int i = 0; i < selected.length; i++) {
         choiceResult.put(i, selected[i]);
       }
 
-      saveChoice(choiceResult);
+      saveChoice(rows, choiceResult);
 
       builder
           .setMultiChoiceItems(items, selected, new DialogInterface.OnMultiChoiceClickListener() {
@@ -305,33 +320,43 @@ public class SettingsActivity extends BaseActivity {
       builder.setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
         @Override
         public void onClick(DialogInterface dialog, int which) {
-          saveChoice(choiceResult);
+          saveChoice(rows, choiceResult);
         }
       });
       builder.show();
     }
 
-    private void initCheckd(boolean[] localChecked) {
+    /** 组内任意一个 op 在已保存的模板里，这一行就算选中 */
+    private void initCheckd(List<List<Integer>> rows, boolean[] localChecked) {
       SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(getActivity());
       String result = sp
           .getString("auto_perm_templete", getActivity().getString(R.string.default_ignored));
-      String[] split = result.split(",");
-      for (String s : split) {
+      SparseIntArray saved = new SparseIntArray();
+      for (String s : result.split(",")) {
         try {
-          int i = Integer.parseInt(s);
-          localChecked[i] = true;
-        } catch (Exception e) {
+          int op = Integer.parseInt(s);
+          saved.put(op, op);
+        } catch (NumberFormatException e) {
           e.printStackTrace();
+        }
+      }
+      for (int row = 0; row < rows.size(); row++) {
+        for (int op : rows.get(row)) {
+          if (saved.indexOfKey(op) >= 0) {
+            localChecked[row] = true;
+            break;
+          }
         }
       }
     }
 
-    private void saveChoice(SparseBooleanArray choiceResult) {
+    private void saveChoice(List<List<Integer>> rows, SparseBooleanArray choiceResult) {
       StringBuilder sb = new StringBuilder();
-      int size = choiceResult.size();
-      for (int i = 0; i < size; i++) {
-        if (choiceResult.get(i)) {
-          sb.append(i).append(',');
+      for (int row = 0; row < rows.size(); row++) {
+        if (choiceResult.get(row)) {
+          for (int op : rows.get(row)) {
+            sb.append(op).append(',');
+          }
         }
       }
       String s = sb.toString();
