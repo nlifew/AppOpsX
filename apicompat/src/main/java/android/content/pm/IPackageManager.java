@@ -1,33 +1,18 @@
 package android.content.pm;
 
-import android.content.Intent;
-import android.os.Binder;
-import android.os.IBinder;
-
 /**
  * Created by zl on 2017/7/31.
+ *
+ * 只保留实际用到的方法，签名以 Android 13（API 33）为准：flags 从 13 起是 long。
  */
 
 public interface IPackageManager {
-  PackageInfo getPackageInfo(String packageName, int flags, int userId);
-  PermissionInfo getPermissionInfo(String name, int flags);
-  PermissionGroupInfo getPermissionGroupInfo(String name, int flags);
-  void grantRuntimePermission(String packageName, String permissionName, int userId);
 
-  void revokeRuntimePermission(String packageName, String permissionName, int userId);
+  PackageInfo getPackageInfo(String packageName, long flags, int userId);
 
-  void resetRuntimePermissions();
-
-  int getPermissionFlags(String permissionName, String packageName, int userId);
-  String[] getAppOpPermissionPackages(String permissionName);
-  ResolveInfo resolveIntent(Intent intent, String resolvedType, int flags, int userId);
-
-  ApplicationInfo getApplicationInfo(String packageName, int flags ,int userId);
+  ApplicationInfo getApplicationInfo(String packageName, long flags, int userId);
 
   ParceledListSlice getInstalledPackages(long flags, int userId);
 
-  int getPackageUid(String packageName,int flags , int userId);
-
-  // for API 23 or lower
-
+  int getPackageUid(String packageName, long flags, int userId);
 }

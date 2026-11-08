@@ -163,6 +163,21 @@ export JAVA_HOME=".../Android Studio/jbr"
 - 修正 `IPackageManager` 桩中 flags 仍为 `int` 的方法（`getPackageUid`、`getApplicationInfo`、`getPackageInfo`），见阶段 3 的遗留问题
 - 在 Android 13、14、15、16 上分别测试
 
+#### 进度（2026-11-08）
+
+在 Xiaomi 13（MIUI 14 / Android 13，Shizuku root 模式）上发现两个问题，已修复，等待真机验证：
+
+1. **“应用权限”页面报 `DeadObjectException`**：`getPackagesForOps` 的返回结果约 1.34 MB，超过 binder 单次传输上限（约 1 MB）。服务进程其实没有崩溃，报错里“remote process probably died”是系统的误判。修复：`OpsResult` 内部的列表改用 `ParcelableListSlice` 分批传输，所有返回 `OpsResult` 的接口都一并受益。
+2. **每个应用只显示两个联网权限**：日志里 iptables 命令是 `--uid-owner -1`，说明应用的 uid 没取到。原因就是阶段 3 记录的 `int`/`long` flags 问题。修复：
+   - `IPackageManager` 桩只保留实际用到的 4 个方法，flags 全部改成 `long`；
+   - `ReflectUtils.opsConvert` 改为调用 `PackageOps` 和 `OpEntry` 的 `@SystemApi` getter（`getLastAccessTime(OP_FLAGS_ALL)` 等），不再读私有字段。旧代码在找不到 `getTime()` 时会把 `null` 拆箱成 `long` 并抛 NPE；字段缓存只按字段名做 key，也不记录找不到的字段，每个应用的每条记录都要重新抛一次异常；
+   - 去掉 LineageOS 的 `mAllowedCount` 分支：Lineage 在 Android 13 上已经没有这个字段。
+
+**已确认、暂不处理**
+
+- `FixCompat` 在 API 28 及以上使用从 Android 9 抄来的写死的表。op 编号只会往后追加，所以这张表覆盖到的部分仍然正确，只是缺少 Android 9 之后新增的 op。改成运行时读取仍按原计划做。
+- “应用权限”页面加载要 8 秒以上。除了上面的反射异常，主要是每个应用都要执行两次 iptables 命令来查询联网状态。可以改成一次 `iptables-save` 后统一解析。
+
 ### 可选：现代化
 
 Kotlin、Material 3、用协程替换 RxJava 等，等功能稳定后再考虑。

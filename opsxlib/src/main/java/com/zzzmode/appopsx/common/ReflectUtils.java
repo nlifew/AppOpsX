@@ -3,6 +3,7 @@ package com.zzzmode.appopsx.common;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -13,114 +14,92 @@ import java.util.Map;
 
 public class ReflectUtils {
 
-  private static final Map<String, Field> sFieldCache = new HashMap<String, Field>();
-  private static final Map<String, Method> sMethodCache = new HashMap<String, Method>();
+  private static final Map<String, Field> sFieldCache =
+      Collections.synchronizedMap(new HashMap<String, Field>());
+  private static final Map<String, Method> sMethodCache =
+      Collections.synchronizedMap(new HashMap<String, Method>());
 
-  public static PackageOps opsConvert(Object object) {
-    String packageName = null;
-    int uid = 0;
-    List<OpEntry> entries = null;
-    Object mPackageName = getFieldValue(object, "mPackageName");
-    if (mPackageName instanceof String) {
-      packageName = ((String) mPackageName);
-    }
+  /** AppOpsManager.OP_FLAGS_ALL：统计所有来源（自身、代理、被代理）的访问 */
+  private static final int OP_FLAGS_ALL = 0x1F;
 
-    Object mUid = getFieldValue(object, "mUid");
-    if (mUid instanceof Integer) {
-      uid = ((Integer) mUid);
-    }
+  /**
+   * 把系统的 AppOpsManager.PackageOps 转换成我们自己的 PackageOps。
+   * 只使用 Android 11 起稳定的 @SystemApi getter，不读私有字段（私有字段在 10、11、13 都变过）。
+   */
+  public static PackageOps opsConvert(Object packageOps) throws ReflectiveOperationException {
+    String packageName = (String) callPublic(packageOps, "getPackageName");
+    int uid = (Integer) callPublic(packageOps, "getUid");
+    List<?> ops = (List<?>) callPublic(packageOps, "getOps");
 
-    Object mEntries = getFieldValue(object, "mEntries");
-    if (mEntries instanceof List) {
-      List list = (List) mEntries;
-      entries = new ArrayList<>();
-      for (Object o : list) {
-        int mOp =  getIntFieldValue(o, "mOp");
-        int mMode = getIntFieldValue(o, "mMode");
-        long mTime = (Long) invokMethod(o, "getTime",null,null);
-        long mRejectTime = (long)invokMethod(o, "getRejectTime",null,null);
-        int mDuration = getIntFieldValue(o, "mDuration");
-        int mProxyUid = getIntFieldValue(o, "mProxyUid");
-        String mProxyPackageName = String.valueOf(getFieldValue(o, "mProxyPackageName"));
-        if(OtherOp.isSupportCount()){
-          // LineageOS
-          int mAllowedCount = getIntFieldValue(o, "mAllowedCount");
-          int mIgnoredCount = getIntFieldValue(o, "mIgnoredCount");
-          entries.add(
-              new OpEntry(mOp, mMode, mTime, mRejectTime, mDuration, mProxyUid, mProxyPackageName,mAllowedCount,mIgnoredCount));
-        }else {
-          entries.add(
-              new OpEntry(mOp, mMode, mTime, mRejectTime, mDuration, mProxyUid, mProxyPackageName));
+    List<OpEntry> entries = new ArrayList<>();
+    if (ops != null) {
+      for (Object o : ops) {
+        int op = (Integer) callPublic(o, "getOp");
+        int mode = (Integer) callPublic(o, "getMode");
+        long time = (Long) callPublic(o, "getLastAccessTime", OP_FLAGS_ALL);
+        long rejectTime = (Long) callPublic(o, "getLastRejectTime", OP_FLAGS_ALL);
+        long duration = (Long) callPublic(o, "getLastDuration", OP_FLAGS_ALL);
+        boolean running = (Boolean) callPublic(o, "isRunning");
+
+        int proxyUid = -1;
+        String proxyPackageName = null;
+        Object proxyInfo = callPublic(o, "getLastProxyInfo", OP_FLAGS_ALL);
+        if (proxyInfo != null) {
+          proxyUid = (Integer) callPublic(proxyInfo, "getUid");
+          proxyPackageName = (String) callPublic(proxyInfo, "getPackageName");
         }
 
+        // 我们的 OpEntry 用 duration == -1 表示正在使用
+        entries.add(new OpEntry(op, mode, time, rejectTime, running ? -1 : (int) duration,
+            proxyUid, proxyPackageName));
       }
     }
 
     return new PackageOps(packageName, uid, entries);
   }
 
-  public static Object getFieldValue(Object obj, String fieldName) {
-    Field field = sFieldCache.get(fieldName);
-    if (field == null) {
-      try {
-        if (obj instanceof Class) {
-          field = ((Class) obj).getDeclaredField(fieldName);
-        } else {
-          field = obj.getClass().getDeclaredField(fieldName);
+  /** 调用 public 方法，Method 按“类名#方法名”缓存；找不到方法时直接抛出，不返回 null */
+  private static Object callPublic(Object obj, String methodName, Object... args)
+      throws ReflectiveOperationException {
+    Class<?> cls = obj.getClass();
+    String key = cls.getName() + "#" + methodName + "/" + args.length;
+    Method method;
+    synchronized (sMethodCache) {
+      method = sMethodCache.get(key);
+      if (method == null) {
+        for (Method m : cls.getMethods()) {
+          if (m.getName().equals(methodName) && m.getParameterTypes().length == args.length) {
+            method = m;
+            break;
+          }
         }
+        if (method == null) {
+          throw new NoSuchMethodException(key);
+        }
+        sMethodCache.put(key, method);
+      }
+    }
+    return method.invoke(obj, args);
+  }
+
+  public static Object getFieldValue(Object obj, String fieldName) {
+    Class<?> cls = obj instanceof Class ? (Class<?>) obj : obj.getClass();
+    String key = cls.getName() + "#" + fieldName;
+    Field field = sFieldCache.get(key);
+    if (field == null && !sFieldCache.containsKey(key)) {
+      try {
+        field = cls.getDeclaredField(fieldName);
         field.setAccessible(true);
-        sFieldCache.put(fieldName, field);
       } catch (Exception e) {
         e.printStackTrace();
       }
+      // 找不到的字段也记下来（值为 null），避免每次调用都重新抛异常
+      sFieldCache.put(key, field);
     }
     if (field != null) {
       try {
         return field.get(obj);
       } catch (IllegalAccessException e) {
-        e.printStackTrace();
-      }
-    }
-    return null;
-  }
-
-  private static int getIntFieldValue(Object obj, String fieldName) {
-    Object fieldValue = getFieldValue(obj, fieldName);
-    if (fieldValue instanceof Integer) {
-      return ((Integer) fieldValue);
-    }
-    return 0;
-  }
-
-  private static long getLongFieldValue(Object obj, String fieldName) {
-    Object fieldValue = getFieldValue(obj, fieldName);
-    if (fieldValue instanceof Long) {
-      return ((Long) fieldValue);
-    }
-    return 0;
-  }
-
-
-  public static Object getArrayFieldValue(Class cls, String arrayFieldName, int index) {
-    Field field = sFieldCache.get(arrayFieldName);
-    if (field == null) {
-      try {
-        field = cls.getDeclaredField(arrayFieldName);
-        field.setAccessible(true);
-        sFieldCache.put(arrayFieldName, field);
-      } catch (Exception e) {
-        e.printStackTrace();
-      }
-    }
-    if (field != null) {
-      try {
-        Object object = field.get(cls);
-        if (object.getClass().isArray()) {
-          Object[] array = (Object[]) object;
-          return array[index];
-        }
-
-      } catch (Exception e) {
         e.printStackTrace();
       }
     }
