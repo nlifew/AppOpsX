@@ -9,6 +9,7 @@ import android.content.res.Configuration;
 import android.os.Bundle;
 import android.os.StrictMode;
 import android.util.Log;
+import androidx.appcompat.app.AppCompatDelegate;
 import com.zzzmode.appopsx.BuildConfig;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -36,6 +37,8 @@ public class AppGlobal extends Application implements Application.ActivityLifecy
 
 
 
+    // 夜间模式是进程级设置，要在第一个页面创建前设好，否则 AppCompat 会把已创建的页面重建一次
+    AppCompatDelegate.setDefaultNightMode(SpHelper.getThemeMode(this));
     LangHelper.updateLanguage(this);
     registerActivityLifecycleCallbacks(this);
     Helper.updataShortcuts(this);

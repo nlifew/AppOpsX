@@ -6,13 +6,11 @@ import android.view.View;
 import androidx.activity.EdgeToEdge;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.appcompat.app.AppCompatDelegate;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 import com.zzzmode.appopsx.R;
 import com.zzzmode.appopsx.ui.core.LangHelper;
-import com.zzzmode.appopsx.ui.core.SpHelper;
 
 /**
  * Created by zl on 2017/1/7.
@@ -24,7 +22,6 @@ public class BaseActivity extends AppCompatActivity {
   protected void onCreate(@Nullable Bundle savedInstanceState) {
     LangHelper.updateLanguage(this);
     super.onCreate(savedInstanceState);
-    AppCompatDelegate.setDefaultNightMode(SpHelper.getThemeMode(this));
     // targetSdk 35 起 Android 15 强制 edge-to-edge，这里让 13、14 也保持一致
     EdgeToEdge.enable(this);
   }

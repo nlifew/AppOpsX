@@ -17,6 +17,7 @@ import android.widget.Toast;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.widget.Toolbar;
+import androidx.appcompat.app.AppCompatDelegate;
 import androidx.preference.Preference;
 import androidx.preference.PreferenceFragmentCompat;
 import androidx.preference.PreferenceGroup;
@@ -178,7 +179,9 @@ public class SettingsActivity extends BaseActivity {
           .setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener() {
             @Override
             public boolean onPreferenceChange(Preference preference, Object newValue) {
-
+              // 此时新值还没写入 SharedPreferences，所以直接用 newValue；AppCompat 会重建所有页面
+              AppCompatDelegate.setDefaultNightMode(Boolean.TRUE.equals(newValue)
+                  ? AppCompatDelegate.MODE_NIGHT_YES : AppCompatDelegate.MODE_NIGHT_NO);
               return true;
             }
           });
