@@ -213,6 +213,88 @@ public class Helper {
     FAKE_PERMS_GROUP.put("READ_CLIPBOARD", permission_group.CLIPBOARD);
     FAKE_PERMS_GROUP.put("WRITE_CLIPBOARD", permission_group.CLIPBOARD);
 
+    // Android 10 起，系统权限的 PermissionInfo.group 一律是 UNDEFINED，靠它分组会全部落到“其他”，
+    // 所以每个 op 都要在这里显式指定分组。名称以 AppOpsManager.opToName() 为准
+    FAKE_PERMS_GROUP.put("READ_CONTACTS", Manifest.permission_group.CONTACTS);
+    FAKE_PERMS_GROUP.put("WRITE_CONTACTS", Manifest.permission_group.CONTACTS);
+    FAKE_PERMS_GROUP.put("GET_ACCOUNTS", Manifest.permission_group.CONTACTS);
+    FAKE_PERMS_GROUP.put("READ_CALENDAR", Manifest.permission_group.CALENDAR);
+    FAKE_PERMS_GROUP.put("WRITE_CALENDAR", Manifest.permission_group.CALENDAR);
+    FAKE_PERMS_GROUP.put("CAMERA", Manifest.permission_group.CAMERA);
+    FAKE_PERMS_GROUP.put("PHONE_CALL_CAMERA", Manifest.permission_group.CAMERA);
+    FAKE_PERMS_GROUP.put("RECORD_AUDIO", Manifest.permission_group.MICROPHONE);
+    FAKE_PERMS_GROUP.put("PHONE_CALL_MICROPHONE", Manifest.permission_group.MICROPHONE);
+    FAKE_PERMS_GROUP.put("RECORD_AUDIO_HOTWORD", Manifest.permission_group.MICROPHONE);
+    FAKE_PERMS_GROUP.put("RECORD_AUDIO_OUTPUT", Manifest.permission_group.MICROPHONE);
+    FAKE_PERMS_GROUP.put("RECORD_INCOMING_PHONE_AUDIO", Manifest.permission_group.MICROPHONE);
+    FAKE_PERMS_GROUP.put("RECEIVE_SOUNDTRIGGER_AUDIO", Manifest.permission_group.MICROPHONE);
+    FAKE_PERMS_GROUP.put("READ_PHONE_STATE", Manifest.permission_group.PHONE);
+    FAKE_PERMS_GROUP.put("READ_PHONE_NUMBERS", Manifest.permission_group.PHONE);
+    FAKE_PERMS_GROUP.put("ADD_VOICEMAIL", Manifest.permission_group.PHONE);
+    FAKE_PERMS_GROUP.put("USE_SIP", Manifest.permission_group.PHONE);
+    FAKE_PERMS_GROUP.put("READ_DEVICE_IDENTIFIERS", Manifest.permission_group.PHONE);
+    FAKE_PERMS_GROUP.put("USE_ICC_AUTH_WITH_DEVICE_IDENTIFIER", Manifest.permission_group.PHONE);
+    FAKE_PERMS_GROUP.put("ANSWER_PHONE_CALLS", permission_group.CALLPHONE);
+    FAKE_PERMS_GROUP.put("ACCEPT_HANDOVER", permission_group.CALLPHONE);
+    FAKE_PERMS_GROUP.put("MANAGE_ONGOING_CALLS", permission_group.CALLPHONE);
+    FAKE_PERMS_GROUP.put("READ_CELL_BROADCASTS", Manifest.permission_group.SMS);
+    FAKE_PERMS_GROUP.put("SMS_FINANCIAL_TRANSACTIONS", Manifest.permission_group.SMS);
+    FAKE_PERMS_GROUP.put("BODY_SENSORS", Manifest.permission_group.SENSORS);
+    FAKE_PERMS_GROUP.put("ACTIVITY_RECOGNITION", Manifest.permission_group.SENSORS);
+    FAKE_PERMS_GROUP.put("ACTIVITY_RECOGNITION_SOURCE", Manifest.permission_group.SENSORS);
+    FAKE_PERMS_GROUP.put("USE_FINGERPRINT", permission_group.FINGERPRINT);
+    FAKE_PERMS_GROUP.put("USE_BIOMETRIC", permission_group.FINGERPRINT);
+    FAKE_PERMS_GROUP.put("FINE_LOCATION_SOURCE", permission_group.GPS);
+    FAKE_PERMS_GROUP.put("COARSE_LOCATION_SOURCE", Manifest.permission_group.LOCATION);
+
+    FAKE_PERMS_GROUP.put("READ_EXTERNAL_STORAGE", Manifest.permission_group.STORAGE);
+    FAKE_PERMS_GROUP.put("WRITE_EXTERNAL_STORAGE", Manifest.permission_group.STORAGE);
+    FAKE_PERMS_GROUP.put("READ_MEDIA_AUDIO", Manifest.permission_group.STORAGE);
+    FAKE_PERMS_GROUP.put("WRITE_MEDIA_AUDIO", Manifest.permission_group.STORAGE);
+    FAKE_PERMS_GROUP.put("READ_MEDIA_VIDEO", Manifest.permission_group.STORAGE);
+    FAKE_PERMS_GROUP.put("WRITE_MEDIA_VIDEO", Manifest.permission_group.STORAGE);
+    FAKE_PERMS_GROUP.put("READ_MEDIA_IMAGES", Manifest.permission_group.STORAGE);
+    FAKE_PERMS_GROUP.put("WRITE_MEDIA_IMAGES", Manifest.permission_group.STORAGE);
+    FAKE_PERMS_GROUP.put("LEGACY_STORAGE", Manifest.permission_group.STORAGE);
+    FAKE_PERMS_GROUP.put("ACCESS_MEDIA_LOCATION", Manifest.permission_group.STORAGE);
+    FAKE_PERMS_GROUP.put("MANAGE_EXTERNAL_STORAGE", Manifest.permission_group.STORAGE);
+    FAKE_PERMS_GROUP.put("NO_ISOLATED_STORAGE", Manifest.permission_group.STORAGE);
+    FAKE_PERMS_GROUP.put("MANAGE_MEDIA", Manifest.permission_group.STORAGE);
+
+    FAKE_PERMS_GROUP.put("AUDIO_ACCESSIBILITY_VOLUME", permission_group.AUDIO);
+
+    FAKE_PERMS_GROUP.put("CHANGE_WIFI_STATE", permission_group.WIFI);
+    FAKE_PERMS_GROUP.put("NEARBY_WIFI_DEVICES", permission_group.WIFI);
+    FAKE_PERMS_GROUP.put("MANAGE_IPSEC_TUNNELS", permission_group.NET);
+    FAKE_PERMS_GROUP.put("ACTIVATE_PLATFORM_VPN", permission_group.NET);
+    FAKE_PERMS_GROUP.put("ESTABLISH_VPN_SERVICE", permission_group.NET);
+    FAKE_PERMS_GROUP.put("ESTABLISH_VPN_MANAGER", permission_group.NET);
+
+    FAKE_PERMS_GROUP.put("ACCESS_RESTRICTED_SETTINGS", permission_group.SETTINGS);
+
+    FAKE_PERMS_GROUP.put("SYSTEM_ALERT_WINDOW", permission_group.DEVICE);
+    FAKE_PERMS_GROUP.put("WAKE_LOCK", permission_group.DEVICE);
+    FAKE_PERMS_GROUP.put("GET_USAGE_STATS", permission_group.DEVICE);
+    FAKE_PERMS_GROUP.put("REQUEST_INSTALL_PACKAGES", permission_group.DEVICE);
+    FAKE_PERMS_GROUP.put("REQUEST_DELETE_PACKAGES", permission_group.DEVICE);
+    FAKE_PERMS_GROUP.put("PICTURE_IN_PICTURE", permission_group.DEVICE);
+    FAKE_PERMS_GROUP.put("INSTANT_APP_START_FOREGROUND", permission_group.DEVICE);
+    FAKE_PERMS_GROUP.put("RUN_ANY_IN_BACKGROUND", permission_group.DEVICE);
+    FAKE_PERMS_GROUP.put("START_FOREGROUND", permission_group.DEVICE);
+    FAKE_PERMS_GROUP.put("BIND_ACCESSIBILITY_SERVICE", permission_group.DEVICE);
+    FAKE_PERMS_GROUP.put("ACCESS_ACCESSIBILITY", permission_group.DEVICE);
+    FAKE_PERMS_GROUP.put("QUERY_ALL_PACKAGES", permission_group.DEVICE);
+    FAKE_PERMS_GROUP.put("INTERACT_ACROSS_PROFILES", permission_group.DEVICE);
+    FAKE_PERMS_GROUP.put("LOADER_USAGE_STATS", permission_group.DEVICE);
+    FAKE_PERMS_GROUP.put("AUTO_REVOKE_PERMISSIONS_IF_UNUSED", permission_group.DEVICE);
+    FAKE_PERMS_GROUP.put("AUTO_REVOKE_MANAGED_BY_INSTALLER", permission_group.DEVICE);
+    FAKE_PERMS_GROUP.put("MANAGE_CREDENTIALS", permission_group.DEVICE);
+    FAKE_PERMS_GROUP.put("SCHEDULE_EXACT_ALARM", permission_group.DEVICE);
+    FAKE_PERMS_GROUP.put("BLUETOOTH_SCAN", permission_group.DEVICE);
+    FAKE_PERMS_GROUP.put("BLUETOOTH_CONNECT", permission_group.DEVICE);
+    FAKE_PERMS_GROUP.put("BLUETOOTH_ADVERTISE", permission_group.DEVICE);
+    FAKE_PERMS_GROUP.put("UWB_RANGING", permission_group.DEVICE);
+
     FAKE_PERMS_GROUP.put("USE_FINGERPRINT", permission_group.FINGERPRINT);
 
     PERMS_GROUPS.put(Manifest.permission_group.CALENDAR,
@@ -292,6 +374,73 @@ public class Helper {
     put("TAKE_AUDIO_FOCUS", R.string.permlab_TAKE_AUDIO_FOCUS);
     put("ACCESS_PHONE_DATA", R.string.permlab_ACCESS_MOBLIE_NETWORK_DATA);
     put("ACCESS_WIFI_NETWORK", R.string.permlab_ACCESS_WIFI_NETWORK_DATA);
+    put("GPS", R.string.permlab_GPS);
+    put("WRITE_SMS", R.string.permlab_WRITE_SMS);
+    put("WRITE_ICC_SMS", R.string.permlab_WRITE_ICC_SMS);
+    put("TAKE_MEDIA_BUTTONS", R.string.permlab_TAKE_MEDIA_BUTTONS);
+    put("MUTE_MICROPHONE", R.string.permlab_MUTE_MICROPHONE);
+    put("PROJECT_MEDIA", R.string.permlab_PROJECT_MEDIA);
+    put("WRITE_WALLPAPER", R.string.permlab_WRITE_WALLPAPER);
+    put("ASSIST_STRUCTURE", R.string.permlab_ASSIST_STRUCTURE);
+    put("ASSIST_SCREENSHOT", R.string.permlab_ASSIST_SCREENSHOT);
+    put("MOCK_LOCATION", R.string.permlab_MOCK_LOCATION);
+    put("AUDIO_ACCESSIBILITY_VOLUME", R.string.permlab_AUDIO_ACCESSIBILITY_VOLUME);
+    put("ACCESS_NOTIFICATIONS", R.string.permlab_ACCESS_NOTIFICATIONS);
+    put("GET_USAGE_STATS", R.string.permlab_GET_USAGE_STATS);
+    put("REQUEST_INSTALL_PACKAGES", R.string.permlab_REQUEST_INSTALL_PACKAGES);
+    put("PICTURE_IN_PICTURE", R.string.permlab_PICTURE_IN_PICTURE);
+    put("INSTANT_APP_START_FOREGROUND", R.string.permlab_INSTANT_APP_START_FOREGROUND);
+    put("ANSWER_PHONE_CALLS", R.string.permlab_ANSWER_PHONE_CALLS);
+    put("RUN_ANY_IN_BACKGROUND", R.string.permlab_RUN_ANY_IN_BACKGROUND);
+    put("CHANGE_WIFI_STATE", R.string.permlab_CHANGE_WIFI_STATE);
+    put("REQUEST_DELETE_PACKAGES", R.string.permlab_REQUEST_DELETE_PACKAGES);
+    put("BIND_ACCESSIBILITY_SERVICE", R.string.permlab_BIND_ACCESSIBILITY_SERVICE);
+    put("ACCEPT_HANDOVER", R.string.permlab_ACCEPT_HANDOVER);
+    put("MANAGE_IPSEC_TUNNELS", R.string.permlab_MANAGE_IPSEC_TUNNELS);
+    put("START_FOREGROUND", R.string.permlab_START_FOREGROUND);
+    put("BLUETOOTH_SCAN", R.string.permlab_BLUETOOTH_SCAN);
+    put("USE_BIOMETRIC", R.string.permlab_USE_BIOMETRIC);
+    put("ACTIVITY_RECOGNITION", R.string.permlab_ACTIVITY_RECOGNITION);
+    put("SMS_FINANCIAL_TRANSACTIONS", R.string.permlab_SMS_FINANCIAL_TRANSACTIONS);
+    put("READ_MEDIA_AUDIO", R.string.permlab_READ_MEDIA_AUDIO);
+    put("WRITE_MEDIA_AUDIO", R.string.permlab_WRITE_MEDIA_AUDIO);
+    put("READ_MEDIA_VIDEO", R.string.permlab_READ_MEDIA_VIDEO);
+    put("WRITE_MEDIA_VIDEO", R.string.permlab_WRITE_MEDIA_VIDEO);
+    put("READ_MEDIA_IMAGES", R.string.permlab_READ_MEDIA_IMAGES);
+    put("WRITE_MEDIA_IMAGES", R.string.permlab_WRITE_MEDIA_IMAGES);
+    put("LEGACY_STORAGE", R.string.permlab_LEGACY_STORAGE);
+    put("ACCESS_ACCESSIBILITY", R.string.permlab_ACCESS_ACCESSIBILITY);
+    put("READ_DEVICE_IDENTIFIERS", R.string.permlab_READ_DEVICE_IDENTIFIERS);
+    put("ACCESS_MEDIA_LOCATION", R.string.permlab_ACCESS_MEDIA_LOCATION);
+    put("QUERY_ALL_PACKAGES", R.string.permlab_QUERY_ALL_PACKAGES);
+    put("MANAGE_EXTERNAL_STORAGE", R.string.permlab_MANAGE_EXTERNAL_STORAGE);
+    put("INTERACT_ACROSS_PROFILES", R.string.permlab_INTERACT_ACROSS_PROFILES);
+    put("ACTIVATE_PLATFORM_VPN", R.string.permlab_ACTIVATE_PLATFORM_VPN);
+    put("LOADER_USAGE_STATS", R.string.permlab_LOADER_USAGE_STATS);
+    put("AUTO_REVOKE_PERMISSIONS_IF_UNUSED", R.string.permlab_AUTO_REVOKE_PERMISSIONS_IF_UNUSED);
+    put("AUTO_REVOKE_MANAGED_BY_INSTALLER", R.string.permlab_AUTO_REVOKE_MANAGED_BY_INSTALLER);
+    put("NO_ISOLATED_STORAGE", R.string.permlab_NO_ISOLATED_STORAGE);
+    put("PHONE_CALL_MICROPHONE", R.string.permlab_PHONE_CALL_MICROPHONE);
+    put("PHONE_CALL_CAMERA", R.string.permlab_PHONE_CALL_CAMERA);
+    put("RECORD_AUDIO_HOTWORD", R.string.permlab_RECORD_AUDIO_HOTWORD);
+    put("MANAGE_ONGOING_CALLS", R.string.permlab_MANAGE_ONGOING_CALLS);
+    put("MANAGE_CREDENTIALS", R.string.permlab_MANAGE_CREDENTIALS);
+    put("USE_ICC_AUTH_WITH_DEVICE_IDENTIFIER", R.string.permlab_USE_ICC_AUTH_WITH_DEVICE_IDENTIFIER);
+    put("RECORD_AUDIO_OUTPUT", R.string.permlab_RECORD_AUDIO_OUTPUT);
+    put("SCHEDULE_EXACT_ALARM", R.string.permlab_SCHEDULE_EXACT_ALARM);
+    put("FINE_LOCATION_SOURCE", R.string.permlab_FINE_LOCATION_SOURCE);
+    put("COARSE_LOCATION_SOURCE", R.string.permlab_COARSE_LOCATION_SOURCE);
+    put("MANAGE_MEDIA", R.string.permlab_MANAGE_MEDIA);
+    put("BLUETOOTH_CONNECT", R.string.permlab_BLUETOOTH_CONNECT);
+    put("UWB_RANGING", R.string.permlab_UWB_RANGING);
+    put("ACTIVITY_RECOGNITION_SOURCE", R.string.permlab_ACTIVITY_RECOGNITION_SOURCE);
+    put("BLUETOOTH_ADVERTISE", R.string.permlab_BLUETOOTH_ADVERTISE);
+    put("RECORD_INCOMING_PHONE_AUDIO", R.string.permlab_RECORD_INCOMING_PHONE_AUDIO);
+    put("NEARBY_WIFI_DEVICES", R.string.permlab_NEARBY_WIFI_DEVICES);
+    put("ESTABLISH_VPN_SERVICE", R.string.permlab_ESTABLISH_VPN_SERVICE);
+    put("ESTABLISH_VPN_MANAGER", R.string.permlab_ESTABLISH_VPN_MANAGER);
+    put("ACCESS_RESTRICTED_SETTINGS", R.string.permlab_ACCESS_RESTRICTED_SETTINGS);
+    put("RECEIVE_SOUNDTRIGGER_AUDIO", R.string.permlab_RECEIVE_SOUNDTRIGGER_AUDIO);
 
   }};
 
@@ -637,27 +786,39 @@ public class Helper {
       opEntryInfo.opPermsName = OtherOp.getOpPermName(op.getOp());
     }
     if (opEntryInfo.opName != null) {
+      fillLabel(context, pm, opEntryInfo,
+          OtherOp.isOtherOp(op.getOp()) ? null : opEntryInfo.opPermsName);
+      return opEntryInfo;
+    }
+    return null;
+  }
+
+  /**
+   * 依次尝试：权限在系统里声明的名称 → 我们自己的翻译（sPermI18N）。
+   * 很多权限在系统里没有声明 label（例如 MANAGE_EXTERNAL_STORAGE），这时 loadLabel()
+   * 会返回权限名本身，要当作没有名称处理；没有对应权限的 op 直接用我们的翻译。
+   */
+  private static void fillLabel(Context context, PackageManager pm, OpEntryInfo info,
+      String permissionName) {
+    if (permissionName != null) {
       try {
-        if (!OtherOp.isOtherOp(op.getOp())) {
-          PermissionInfo permissionInfo = pm.getPermissionInfo(opEntryInfo.opPermsName, 0);
-          opEntryInfo.opPermsLab = String.valueOf(permissionInfo.loadLabel(pm));
-          opEntryInfo.opPermsDesc = String.valueOf(permissionInfo.loadDescription(pm));
+        PermissionInfo permissionInfo = pm.getPermissionInfo(permissionName, 0);
+        CharSequence label = permissionInfo.loadLabel(pm);
+        if (label != null && !permissionName.contentEquals(label)) {
+          info.opPermsLab = label.toString();
+          CharSequence desc = permissionInfo.loadDescription(pm);
+          info.opPermsDesc = desc != null ? desc.toString() : null;
+          return;
         }
       } catch (PackageManager.NameNotFoundException e) {
         //ignore
       }
-
-      if (opEntryInfo.opPermsLab == null) {
-        Integer resId = sPermI18N.get(opEntryInfo.opName);
-        if (resId != null) {
-          opEntryInfo.opPermsLab = context.getString(resId);
-          opEntryInfo.opPermsDesc = opEntryInfo.opName;
-        }
-      }
-
-      return opEntryInfo;
     }
-    return null;
+    Integer resId = sPermI18N.get(info.opName);
+    if (resId != null) {
+      info.opPermsLab = context.getString(resId);
+      info.opPermsDesc = info.opName;
+    }
   }
 
 
@@ -1111,19 +1272,9 @@ public class Helper {
         OpEntry entry = new OpEntry(table.switches[i], AppOpsManager.MODE_ALLOWED, 0, 0, 0, 0, null);
         OpEntryInfo opEntryInfo = new OpEntryInfo(entry);
         opEntryInfo.opName = table.names[i];
-        try {
-          PermissionInfo permissionInfo = pm.getPermissionInfo(table.permissions[i], 0);
-          opEntryInfo.opPermsLab = String.valueOf(permissionInfo.loadLabel(pm));
-          opEntryInfo.opPermsDesc = String.valueOf(permissionInfo.loadDescription(pm));
-        } catch (PackageManager.NameNotFoundException e) {
-          //ignore
-          Integer resId = sPermI18N.get(opEntryInfo.opName);
-          if (resId != null) {
-            opEntryInfo.opPermsLab = context.getString(resId);
-            opEntryInfo.opPermsDesc = opEntryInfo.opName;
-          } else {
-            opEntryInfo.opPermsLab = opEntryInfo.opName;
-          }
+        fillLabel(context, pm, opEntryInfo, table.permissions[i]);
+        if (opEntryInfo.opPermsLab == null) {
+          opEntryInfo.opPermsLab = opEntryInfo.opName;
         }
         sOpEntryInfoList.add(opEntryInfo);
       }
