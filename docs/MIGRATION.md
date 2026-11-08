@@ -105,9 +105,9 @@ export JAVA_HOME=".../Android Studio/jbr"
 - **旧版本分支**：删除了 `AppGlobal`、`Helper`（快捷方式）、`LangHelper`、`LocalImageLoader`、`ExpandableItemIndicator`、`FLog` 和 `remote/Helper` 里的 SDK 版本判断，以及 `IPackageManager` 桩里的旧版 `getPackageUid(String, int)`。`FixCompat` 里的 3 处留给阶段 4 重写
 - **CI**：同时构建 debug 和 release
 
-**未解决：新装应用弹窗失效**
+**未解决：新装应用弹窗失效**（重新设计见“5. 新装应用弹窗”）
 
-`AppInstalledReceiver` 收到新装应用的广播后直接 `startActivity` 弹出 `AlertInstalledPremActivity`，但 Android 10 起禁止应用在后台启动 Activity，所以只有 AppOpsX 正好在前台时才会弹出。另外这个 receiver 是动态注册的，AppOpsX 进程不在时也收不到广播。要恢复这个功能需要重新设计（例如改成发通知），待决定。
+`AppInstalledReceiver` 收到新装应用的广播后直接 `startActivity` 弹出 `AlertInstalledPremActivity`，但 Android 10 起禁止应用在后台启动 Activity，所以只有 AppOpsX 正好在前台时才会弹出。另外这个 receiver 是动态注册的，AppOpsX 进程不在时也收不到广播。
 
 ### 阶段 3：服务端改为接入 Shizuku
 
@@ -172,6 +172,33 @@ Kotlin、Material 3、用协程替换 RxJava 等，等功能稳定后再考虑�
 | 阶段 | 状态 |
 |---|---|
 | 1 修复构建 | 已完成（构建通过，待设备验证） |
-| 2 SDK 适配 | 已完成（构建通过，待设备验证；新装应用弹窗待重新设计） |
-| 3 接入 Shizuku | 已完成（构建通过，待设备验证；核心功能依赖阶段 4） |
-| 4 AppOps 适配与测试 | 未开始 |
+| 2 SDK 适配 | 已完成（构建通过，待设备验证；新装应用弹窗见第 5 节） |
+| 3 接入 Shizuku | 已完成（Xiaomi 13 / Android 13 上已能通过 Shizuku root 模式拉起服务；核心功能依赖阶段 4） |
+| 4 AppOps 适配与测试 | 进行中 |
+| 新装应用弹窗 | 方案已定，阶段 4 之后实现 |
+
+## 5. 新装应用弹窗（方案已定，阶段 4 之后实现）
+
+**目标**：恢复原版行为。装好新应用后自动弹出权限确认框，让用户按模板关闭它的权限。
+
+**原版为什么在新系统上失效**：见阶段 2 的“未解决”。原版的 receiver 是 AppOpsX 进程动态注册的，进程不在就收不到广播；收到了也不能从后台启动 Activity。
+
+**方案**：交给 Shizuku 拉起的 `OpsxService` 来做。
+
+1. **监听安装**：Shizuku API 13 支持 UserService 的构造函数接收 `Context` 参数。`OpsxService` 拿到 `Context` 后用 `registerReceiver` 监听 `PACKAGE_ADDED`，忽略 `EXTRA_REPLACING`（应用更新）。全部是公开 API，不会多出要按版本适配的隐藏 API。
+2. **拉起弹窗**：由 `OpsxService` 调用 `startActivity` 启动 `AlertInstalledPremActivity`。
+   - 后台启动 Activity 的限制针对的是普通应用。shell 身份持有 `START_ACTIVITIES_FROM_BACKGROUND`（`adb shell am start` 能随时拉起界面就是这个原因），root 身份不受限。Android 14 起这部分规则又收紧过，**需要在真机上验证**。
+   - shell 身份启动不了别人应用里未导出的 Activity，所以 `AlertInstalledPremActivity` 要重新导出，同时加上 `android:permission="android.permission.INTERACT_ACROSS_USERS_FULL"`。普通第三方应用拿不到这个权限，shell 和 root 都有，这和 Shizuku 自己的 provider 用的是同一个做法。
+3. **服务需要常驻**：依赖“允许后台运行”（daemon 模式）。daemon 模式的 UserService 一旦拉起，就独立于 AppOpsX 的进程存活。
+4. **开机**：Shizuku 不会主动拉起任何 UserService。可以在 AppOpsX 里注册 `BOOT_COMPLETED`，收到后用 `addBinderReceivedListenerSticky` 等 Shizuku 就绪，再调用 `bindUserService`。前提是 Shizuku 自己开机时在运行。
+
+**已知限制**
+
+- 只在 Shizuku 运行、并且服务已被拉起时有效。
+- Shizuku 的开机自启并不可靠：在维护者的 MIUI 14 设备上会稳定失败。如果 Shizuku 没有启动，服务也拉不起来，这期间装的应用不会弹窗，要等用户手动启动 Shizuku 并打开 AppOpsX 之后才恢复。
+- 用 Magisk 或 KernelSU 模块保证开机可用可以解决这个问题，但对这个功能来说代价太大，不考虑。
+
+**不做的方案**
+
+- “下次打开 AppOpsX 时列出新装应用”：交互不自然，不是理想的方案，暂不实现。
+- 改成发通知：仍然依赖 AppOpsX 进程存活，还要申请通知权限，不解决根本问题。
