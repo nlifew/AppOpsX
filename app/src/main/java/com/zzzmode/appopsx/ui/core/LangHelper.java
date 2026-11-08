@@ -1,10 +1,8 @@
 package com.zzzmode.appopsx.ui.core;
 
-import android.annotation.TargetApi;
 import android.content.Context;
 import android.content.res.Configuration;
 import android.content.res.Resources;
-import android.os.Build;
 import android.os.LocaleList;
 import android.text.TextUtils;
 import android.util.DisplayMetrics;
@@ -24,11 +22,7 @@ public class LangHelper {
   private static Map<String,Locale> sLocalMap = new HashMap<>();
   private static Locale sDefaultLocal = null;
   static {
-    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-      sDefaultLocal = LocaleList.getDefault().get(0);
-    }else {
-      sDefaultLocal = Locale.getDefault();
-    }
+    sDefaultLocal = LocaleList.getDefault().get(0);
 
     sLocalMap.put("zh-cn",Locale.SIMPLIFIED_CHINESE);
     sLocalMap.put("zh-tw",Locale.TRADITIONAL_CHINESE);
@@ -77,15 +71,10 @@ public class LangHelper {
 
 
   public static Context attachBaseContext(Context context) {
-    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-      return updateResources(context);
-    } else {
-      return context;
-    }
+    return updateResources(context);
   }
 
 
-  @TargetApi(Build.VERSION_CODES.N)
   private static Context updateResources(Context context) {
     Resources resources = context.getResources();
     Locale locale = getLocaleByLanguage(context);

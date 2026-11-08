@@ -1,7 +1,5 @@
 package com.zzzmode.appopsx.common;
 
-import android.os.Build.VERSION;
-import android.os.Build.VERSION_CODES;
 import android.system.Os;
 import android.system.OsConstants;
 import android.util.Log;
@@ -43,11 +41,7 @@ public class FLog {
 
   private static void chown(String path, int uid, int gid){
     try {
-      if (VERSION.SDK_INT >= VERSION_CODES.LOLLIPOP) {
-        Os.chown(path,uid,gid);
-      }else {
-        Runtime.getRuntime().exec("chown "+uid+":"+gid+" "+path).destroy();
-      }
+      Os.chown(path,uid,gid);
     } catch (Exception e) {
       e.printStackTrace();
     }
@@ -55,11 +49,7 @@ public class FLog {
 
   private static void chmod(String path,int mode){
     try {
-      if (VERSION.SDK_INT >= VERSION_CODES.LOLLIPOP) {
-        Os.chmod(path, mode);
-      }else {
-        Runtime.getRuntime().exec("chmod "+mode+" "+path).destroy();
-      }
+      Os.chmod(path, mode);
     } catch (Exception e) {
       e.printStackTrace();
     }

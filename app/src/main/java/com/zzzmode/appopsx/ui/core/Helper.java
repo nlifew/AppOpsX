@@ -17,12 +17,10 @@ import android.graphics.Canvas;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.graphics.drawable.Icon;
-import android.os.Build;
 import android.preference.PreferenceManager;
 import android.text.TextUtils;
 import android.util.SparseArray;
 import android.util.SparseIntArray;
-import androidx.annotation.RequiresApi;
 import androidx.core.text.BidiFormatter;
 import androidx.core.util.Pair;
 import com.zzzmode.appopsx.BuildConfig;
@@ -300,62 +298,56 @@ public class Helper {
 
 
   public static void updataShortcuts(final Context context) {
-    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N_MR1) {
-      getInstalledApps(context, false)
-          .concatMap(new Function<List<AppInfo>, ObservableSource<AppInfo>>() {
-            @Override
-            public ObservableSource<AppInfo> apply(List<AppInfo> appInfos) throws Exception {
-              return Observable.fromIterable(appInfos);
+    getInstalledApps(context, false)
+        .concatMap(new Function<List<AppInfo>, ObservableSource<AppInfo>>() {
+          @Override
+          public ObservableSource<AppInfo> apply(List<AppInfo> appInfos) throws Exception {
+            return Observable.fromIterable(appInfos);
+          }
+        }).filter(new Predicate<AppInfo>() {
+      @Override
+      public boolean test(AppInfo info) throws Exception {
+        return !BuildConfig.APPLICATION_ID.equals(info.packageName);
+      }
+    }).collect(new Callable<List<AppInfo>>() {
+      @Override
+      public List<AppInfo> call() throws Exception {
+        return new ArrayList<AppInfo>();
+      }
+    }, new BiConsumer<List<AppInfo>, AppInfo>() {
+      @Override
+      public void accept(List<AppInfo> appInfos, AppInfo info) throws Exception {
+        appInfos.add(info);
+      }
+    }).map(new Function<List<AppInfo>, List<AppInfo>>() {
+      @Override
+      public List<AppInfo> apply(List<AppInfo> appInfos) throws Exception {
+        Collections.sort(appInfos, new Comparator<AppInfo>() {
+          @Override
+          public int compare(AppInfo o1, AppInfo o2) {
+            return o1.time > o2.time ? -1 : 1;
+          }
+        });
+        return appInfos;
+      }
+    }).subscribeOn(Schedulers.io()).observeOn(AndroidSchedulers.mainThread())
+        .subscribe(new ResourceSingleObserver<List<AppInfo>>() {
+          @Override
+          public void onSuccess(List<AppInfo> value) {
+            try {
+              updataShortcuts(context, value);
+            } catch (Exception e) {
+              e.printStackTrace();
             }
-          }).filter(new Predicate<AppInfo>() {
-        @Override
-        public boolean test(AppInfo info) throws Exception {
-          return !BuildConfig.APPLICATION_ID.equals(info.packageName);
-        }
-      }).collect(new Callable<List<AppInfo>>() {
-        @Override
-        public List<AppInfo> call() throws Exception {
-          return new ArrayList<AppInfo>();
-        }
-      }, new BiConsumer<List<AppInfo>, AppInfo>() {
-        @Override
-        public void accept(List<AppInfo> appInfos, AppInfo info) throws Exception {
-          appInfos.add(info);
-        }
-      }).map(new Function<List<AppInfo>, List<AppInfo>>() {
-        @Override
-        public List<AppInfo> apply(List<AppInfo> appInfos) throws Exception {
-          Collections.sort(appInfos, new Comparator<AppInfo>() {
-            @Override
-            public int compare(AppInfo o1, AppInfo o2) {
-              return o1.time > o2.time ? -1 : 1;
-            }
-          });
-          return appInfos;
-        }
-      }).subscribeOn(Schedulers.io()).observeOn(AndroidSchedulers.mainThread())
-          .subscribe(new ResourceSingleObserver<List<AppInfo>>() {
-            @Override
-            public void onSuccess(List<AppInfo> value) {
-              try {
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N_MR1) {
-                  updataShortcuts(context, value);
-                }
-              } catch (Exception e) {
-                e.printStackTrace();
-              }
-            }
+          }
 
-            @Override
-            public void onError(Throwable e) {
+          @Override
+          public void onError(Throwable e) {
 
-            }
-          });
-
-    }
+          }
+        });
   }
 
-  @RequiresApi(api = Build.VERSION_CODES.N_MR1)
   private static void updataShortcuts(Context context, List<AppInfo> items) {
     ShortcutManager shortcutManager = context.getSystemService(ShortcutManager.class);
     List<ShortcutInfo> shortcutInfoList = new ArrayList<>();

@@ -82,13 +82,32 @@ export JAVA_HOME=".../Android Studio/jbr"
 
 ### 阶段 2：minSdk 33、targetSdk 35 适配
 
-- `registerReceiver` 带上 `RECEIVER_NOT_EXPORTED` 或 `RECEIVER_EXPORTED`（`AppGlobal.installReceiver`）。**targetSdk 34 起不带会直接抛 `SecurityException`，在 Android 14+ 上很可能一启动就崩溃，优先修**
+- `registerReceiver` 带上 `RECEIVER_NOT_EXPORTED` 或 `RECEIVER_EXPORTED`（`AppGlobal.installReceiver`）
 - 声明 `QUERY_ALL_PACKAGES`（包可见性）
 - `AlertInstalledPremActivity` 目前对外导出，需要收紧
 - edge-to-edge 处理 insets
 - 删除 API 33 以下的版本分支
 - ~~`OpsxConfigProvider` 没有权限保护~~、~~不再使用 `/sdcard/Android/data/...` 下的 jar 和脚本~~：阶段 3 已随旧服务端一起删除
 - ~~升级或替换过时的 AndroidX 依赖~~：阶段 1 已完成
+
+#### 完成情况（2026-11-08）
+
+`assembleDebug` 和 `assembleRelease` 均已通过（尚未在设备上验证）。
+
+- **广播注册**：`installReceiver` 改为带 `RECEIVER_NOT_EXPORTED` 注册。（更正：之前判断这里会在 Android 14+ 上崩溃，其实不会。targetSdk 34 起强制要求导出标志，但只监听系统广播的 receiver 不受这条限制，而 `PACKAGE_ADDED` 正是系统广播。现在显式加上，是为了让意图更明确）
+- 删除只给 Android 8 以下用的静态 `AppInstalledReceiver` 声明和运行时启用它的分支
+- **包可见性**：声明 `QUERY_ALL_PACKAGES`。如果以后发布到 Google Play，需要在 Play 后台说明用途（权限管理工具属于允许的类别）
+- **组件导出**：`AlertInstalledPremActivity` 改为 `exported="false"`，它只由应用内部启动。现在只有启动页、`appops://` 深链接对应的 `AppPermissionActivity`，以及 Shizuku 的 provider 是导出的
+- **edge-to-edge**：统一在 `BaseActivity` 处理。所有页面都由 `layout_appbar` 加内容区组成，所以只需要两步：
+  - 调用 `EdgeToEdge.enable()`，让 Android 13、14 也和 15+ 的表现一致；
+  - 在 `onContentChanged()` 里设置 insets：appBar 的顶部让出状态栏高度，背景色延伸到状态栏后面；内容区让出导航栏和刘海。`layout_appbar` 的高度因此改为 `wrap_content`。
+  - 状态栏图标颜色交给 `SystemBarStyle.auto` 按日间/夜间模式切换，主题里的 `statusBarColor`、`windowLightStatusBar` 已删除
+- **旧版本分支**：删除了 `AppGlobal`、`Helper`（快捷方式）、`LangHelper`、`LocalImageLoader`、`ExpandableItemIndicator`、`FLog` 和 `remote/Helper` 里的 SDK 版本判断，以及 `IPackageManager` 桩里的旧版 `getPackageUid(String, int)`。`FixCompat` 里的 3 处留给阶段 4 重写
+- **CI**：同时构建 debug 和 release
+
+**未解决：新装应用弹窗失效**
+
+`AppInstalledReceiver` 收到新装应用的广播后直接 `startActivity` 弹出 `AlertInstalledPremActivity`，但 Android 10 起禁止应用在后台启动 Activity，所以只有 AppOpsX 正好在前台时才会弹出。另外这个 receiver 是动态注册的，AppOpsX 进程不在时也收不到广播。要恢复这个功能需要重新设计（例如改成发通知），待决定。
 
 ### 阶段 3：服务端改为接入 Shizuku
 
@@ -153,6 +172,6 @@ Kotlin、Material 3、用协程替换 RxJava 等，等功能稳定后再考虑�
 | 阶段 | 状态 |
 |---|---|
 | 1 修复构建 | 已完成（构建通过，待设备验证） |
-| 2 SDK 适配 | 未开始（部分条目已随阶段 1、3 完成） |
+| 2 SDK 适配 | 已完成（构建通过，待设备验证；新装应用弹窗待重新设计） |
 | 3 接入 Shizuku | 已完成（构建通过，待设备验证；核心功能依赖阶段 4） |
 | 4 AppOps 适配与测试 | 未开始 |

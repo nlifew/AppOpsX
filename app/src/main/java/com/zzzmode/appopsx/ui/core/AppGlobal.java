@@ -2,13 +2,10 @@ package com.zzzmode.appopsx.ui.core;
 
 import android.app.Activity;
 import android.app.Application;
-import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.content.pm.PackageManager;
 import android.content.res.Configuration;
-import android.os.Build;
 import android.os.Bundle;
 import android.os.StrictMode;
 import android.util.Log;
@@ -31,9 +28,7 @@ public class AppGlobal extends Application implements Application.ActivityLifecy
 
       StrictMode.VmPolicy.Builder builder = new StrictMode.VmPolicy.Builder();
 
-      if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
-        builder.detectNonSdkApiUsage();
-      }
+      builder.detectNonSdkApiUsage();
       StrictMode.setVmPolicy(builder.penaltyLog()
           .build());
 
@@ -51,19 +46,11 @@ public class AppGlobal extends Application implements Application.ActivityLifecy
 
 
   private void installReceiver(){
-    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O){
-
-      IntentFilter filter = new IntentFilter();
-      filter.addAction(Intent.ACTION_PACKAGE_ADDED);
-      filter.addDataScheme("package");
-      registerReceiver(new AppInstalledReceiver(),filter);
-    }else {
-
-      ComponentName componentName = new ComponentName(this,AppInstalledReceiver.class);
-      getPackageManager().setComponentEnabledSetting(componentName, PackageManager.COMPONENT_ENABLED_STATE_ENABLED,PackageManager.DONT_KILL_APP);
-
-    }
-
+    // PACKAGE_ADDED 是系统广播，NOT_EXPORTED 也能收到
+    IntentFilter filter = new IntentFilter();
+    filter.addAction(Intent.ACTION_PACKAGE_ADDED);
+    filter.addDataScheme("package");
+    registerReceiver(new AppInstalledReceiver(), filter, Context.RECEIVER_NOT_EXPORTED);
   }
 
 

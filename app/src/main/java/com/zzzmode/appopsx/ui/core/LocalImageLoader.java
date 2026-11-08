@@ -5,8 +5,6 @@ import android.content.Context;
 import android.content.pm.UserInfo;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
-import android.os.Build.VERSION;
-import android.os.Build.VERSION_CODES;
 import androidx.collection.LruCache;
 import android.widget.ImageView;
 
@@ -67,11 +65,7 @@ public class LocalImageLoader {
     Drawable drawable = sLruCache.get(appInfo.packageName);
 
     if (drawable == null && appInfo.applicationInfo != null) {
-      if (VERSION.SDK_INT >= VERSION_CODES.LOLLIPOP_MR1) {
-        drawable = appInfo.applicationInfo.loadUnbadgedIcon(context.getPackageManager());
-      }else {
-        drawable = appInfo.applicationInfo.loadIcon(context.getPackageManager());
-      }
+      drawable = appInfo.applicationInfo.loadUnbadgedIcon(context.getPackageManager());
       UserInfo currentUser = Users.getInstance().getCurrentUser();
       if(currentUser != null && currentUser.isManagedProfile()){
         drawable = context.getPackageManager().getUserBadgedIcon(drawable,currentUser.getUserHandle());

@@ -4,7 +4,6 @@ import android.app.ActivityThread;
 import android.app.AppOpsManager;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
-import android.os.Build;
 import android.os.UserHandle;
 import com.zzzmode.appopsx.common.FixCompat;
 import com.zzzmode.appopsx.common.ReflectUtils;
@@ -21,11 +20,7 @@ class Helper {
   static int getPackageUid(String packageName, int userId) {
     int uid = -1;
     try {
-      if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-        uid = ActivityThread.getPackageManager().getPackageUid(packageName,PackageManager.MATCH_UNINSTALLED_PACKAGES,userId);
-      } else {
-        uid = ActivityThread.getPackageManager().getPackageUid(packageName, userId);
-      }
+      uid = ActivityThread.getPackageManager().getPackageUid(packageName,PackageManager.MATCH_UNINSTALLED_PACKAGES,userId);
     } catch (Throwable e) {
       e.printStackTrace();
     }

@@ -15,8 +15,6 @@
   <!-- Base application theme. -->
   <style name="AppTheme" parent="BaseTheme">
     <item name="actionOverflowButtonStyle">@style/OverFlow</item>
-    <item name="android:windowLightStatusBar" tools:targetApi="m">true</item>
-    <item name="android:statusBarColor">@android:color/transparent</item>
 
   </style>
 

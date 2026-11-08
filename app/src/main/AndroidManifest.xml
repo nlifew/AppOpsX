@@ -2,6 +2,8 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
 
   <uses-permission android:name="android.permission.INTERNET"/>
+  <!-- 需要列出并管理所有已安装应用的权限，这是应用的核心功能 -->
+  <uses-permission android:name="android.permission.QUERY_ALL_PACKAGES"/>
 
   <application
     android:allowBackup="true"
@@ -46,7 +48,7 @@
     <activity
       android:configChanges="keyboardHidden|orientation|screenSize"
       android:excludeFromRecents="true"
-      android:exported="true"
+      android:exported="false"
       android:name=".ui.permission.AlertInstalledPremActivity"
       android:noHistory="true"
       android:taskAffinity="com.zzzmode.appopsx.task.alert"
@@ -55,19 +57,6 @@
     <activity android:name=".ui.main.backup.BackupActivity"/>
     <activity android:name=".ui.main.HtmlActionActivity"/>
     <activity android:name=".ui.main.usagestats.PermsUsageStatsActivity"/>
-
-    <receiver
-      android:exported="false"
-      android:enabled="false"
-      android:name=".ui.core.AppInstalledReceiver">
-      <intent-filter>
-        <action android:name="android.intent.action.PACKAGE_INSTALL"/>
-        <action android:name="android.intent.action.PACKAGE_ADDED"/>
-
-        <data android:scheme="package"/>
-      </intent-filter>
-    </receiver>
-
 
     <meta-data android:name="GIT_COMMIT_ID" android:value="${gitCommitId}\"/>
   </application>

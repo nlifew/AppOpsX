@@ -2,7 +2,6 @@ package com.zzzmode.appopsx.ui.widget;
 
 import android.content.Context;
 import android.graphics.drawable.Animatable;
-import android.os.Build;
 import android.os.Parcelable;
 import androidx.annotation.DrawableRes;
 import androidx.appcompat.widget.AppCompatImageView;
@@ -38,14 +37,6 @@ public class ExpandableItemIndicator extends FrameLayout {
   public ExpandableItemIndicator(Context context, AttributeSet attrs, int defStyleAttr) {
     super(context, attrs, defStyleAttr);
     onInit(context, attrs, defStyleAttr);
-  }
-
-  protected boolean shouldUseAnimatedIndicator(Context context, AttributeSet attrs,
-      int defStyleAttr) {
-    // NOTE: AnimatedVectorDrawableCompat works on API level 11+,
-    // but I prefer to use it on API level 16+ only due to performance reason of
-    // both hardware and Android platform.
-    return Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN;
   }
 
   protected void onInit(Context context, AttributeSet attrs, int defStyleAttr) {

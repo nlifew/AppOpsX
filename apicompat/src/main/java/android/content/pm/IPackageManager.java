@@ -29,6 +29,5 @@ public interface IPackageManager {
   int getPackageUid(String packageName,int flags , int userId);
 
   // for API 23 or lower
-  int getPackageUid(String packageName, int userId);
 
 }
