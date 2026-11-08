@@ -34,7 +34,6 @@
   <string name="app_sort_type_summary">Orden actual:%1$s</string>
   <string name="app_sort_type_title">Seleccione ordenar por</string>
   <string name="app_daynight_mode">Modo nocturno</string>
-  <string name="app_daynight_mode_summary">Esta configuración surte efecto la próxima vez que inicie</string>
   <string name="app_language">Cambiar de idioma</string>
   <string name="close_bg_server_summary">Desactivar los servicios de fondo</string>
   <string name="close_bg_server_title">En algunos casos haciendo clic en esta opción puede mejorar la conexión falla problema \n Si utilizas normal por favor no haga clic aquí</string>

@@ -34,7 +34,6 @@
   <string name="app_sort_type_summary">Aktuální řazení: %1$s</string>
   <string name="app_sort_type_title">Seřadit podle</string>
   <string name="app_daynight_mode">Tmavý vzhled</string>
-  <string name="app_daynight_mode_summary">Změny se projeví po restartu aplikace</string>
   <string name="app_language">Jazyk</string>
   <string name="close_bg_server_summary">Vypnout služby na pozadí</string>
   <string name="close_bg_server_title">Zlepšení spojení při chybě spojení</string>

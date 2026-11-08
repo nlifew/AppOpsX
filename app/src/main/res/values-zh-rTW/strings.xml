@@ -35,7 +35,7 @@
   <string name="app_sort_type_summary">當前排序方式：%1$s</string>
   <string name="app_sort_type_title">選擇應用排序方式</string>
   <string name="app_daynight_mode">夜間模式</string>
-  <string name="app_daynight_mode_summary">該設置在下次啟動時生效</string>
+  <string name="app_daynight_mode_summary">使用深色主題</string>
   <string name="app_language">切換語言</string>
   <string name="close_bg_server_summary">關閉後臺服務</string>
   <string name="close_bg_server_title">部分情況下點擊此選項可以改善連接失敗的問題\n如果使用正常請不要點擊此項</string>

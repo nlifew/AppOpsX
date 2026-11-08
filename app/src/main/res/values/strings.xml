@@ -35,7 +35,7 @@
   <string name="app_sort_type_summary">Current sort order: %1$s</string>
   <string name="app_sort_type_title">Sort By</string>
   <string name="app_daynight_mode">Night mode</string>
-  <string name="app_daynight_mode_summary">These setting will take effect after re-launch</string>
+  <string name="app_daynight_mode_summary">Use a dark theme</string>
   <string name="app_language">Language</string>
   <string name="close_bg_server_summary">Turn off background services</string>
   <string name="close_bg_server_title">Click this option to improve the connection when connection failure</string>

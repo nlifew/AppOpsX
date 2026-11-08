@@ -47,7 +47,7 @@
   <string name="app_sort_type_title">选择应用排序方式</string>
 
   <string name="app_daynight_mode">夜间模式</string>
-  <string name="app_daynight_mode_summary">该设置在下次启动时生效</string>
+  <string name="app_daynight_mode_summary">使用深色主题</string>
 
   <string name="app_language">切换语言</string>
 
