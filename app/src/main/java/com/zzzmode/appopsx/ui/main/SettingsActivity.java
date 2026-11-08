@@ -489,7 +489,7 @@ public class SettingsActivity extends BaseActivity {
       if (!getContext().getPackageManager().queryIntentActivities(intent, 0).isEmpty()) {
         startActivity(intent);
       } else {
-        intent.setData(Uri.parse("https://github.com/8enet/AppOpsX"));
+        intent.setData(Uri.parse("https://github.com/nlifew/AppOpsX"));
         startActivity(intent);
       }
     }

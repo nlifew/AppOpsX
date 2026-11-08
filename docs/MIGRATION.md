@@ -152,7 +152,7 @@ export JAVA_HOME=".../Android Studio/jbr"
 
 `AppOpsHandler` 和 `Helper` 内部调用的 `IPackageManager.getPackageUid`、`getApplicationInfo`、`getPackageInfo`，在 Android 13 上 flags 参数都已改成 `long`，桩里还是 `int`，运行时会报 `NoSuchMethodError`。其中 `getPackageUid` 和 `getApplicationInfo` 用来取应用的 uid，**这两个失败后 uid 为 -1，读取和修改权限都会失败**，所以阶段 3 做完后核心功能仍然用不了，要等阶段 4。
 
-**文档**：`docs/help.md` 和 app 内的 `res/raw/help.html` 还在介绍 ADB/root 启动方式，需要改写成 Shizuku 的使用说明；README 也要同步更新。
+**文档**：~~`docs/help.md`、`res/raw/help.html`、README 还在介绍 ADB/root 启动方式~~：已改写为 Shizuku 的使用说明（2026-11-08）。GitHub 链接改为指向本仓库；原作者的应用商店、邮箱、Crowdin 链接已从 README 和帮助中移除，设置页的“翻译”一项仍指向原项目的 Crowdin，`licenses.html` 中保留原项目的版权声明。
 
 ### 阶段 4：AppOps 版本适配与测试
 
@@ -184,8 +184,8 @@ export JAVA_HOME=".../Android Studio/jbr"
 **剩余**
 
 - 在 Android 14、15、16 上测试（目前只在 Android 13 上验证过）
-- 每个页面打开后都会被系统立即重建一次（日志中的 `Schedule relaunch activity`）。原因是 `BaseActivity` 在 `super.onCreate()` 之后才调用 `AppCompatDelegate.setDefaultNightMode()`。不影响功能，但会让打开页面多花一次初始化的时间
-- “自动忽略权限模板”列表里会有重复项：多个 op 共用一个开关时，它们会以同一个开关 op 各出现一次。这在 Android 9 的表上就存在，op 变多后更明显
+- ~~每个页面打开后都会被系统立即重建一次~~：已修复，`setDefaultNightMode()` 移到 `Application.onCreate`，并在切换设置时立即生效；Xiaomi 13 上冷启动不再出现 `Schedule relaunch activity`
+- ~~“自动忽略权限模板”列表里会有重复项~~：已修复，对话框按开关 op 分组显示，保存时展开为组内所有 op，保存格式不变
 
 ### 可选：现代化
 

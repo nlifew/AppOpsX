@@ -71,11 +71,11 @@
       android:title="@string/version"/>
     <androidx.preference.Preference
       android:key="project"
-      android:summary="https://github.com/8enet/AppOpsX"
+      android:summary="https://github.com/nlifew/AppOpsX"
       android:title="Github">
       <intent
         android:action="android.intent.action.VIEW"
-        android:data="https://github.com/8enet/AppOpsX"/>
+        android:data="https://github.com/nlifew/AppOpsX"/>
     </androidx.preference.Preference>
     <androidx.preference.Preference
       android:key="translate"

@@ -453,80 +453,59 @@ pre[class*="language-"] {
 
 <body>
 
-<p><a href="https://8enet.github.io/AppOpsX">获取更多信息</a></p>
-
-<hr>
-
 <h3 id="toc_0">简介</h3>
 
 <ol>
-<li><strong>这个应用是干嘛的?</strong> 
-
+<li><strong>这个应用是干嘛的？</strong>
 <ul>
 <li>忽略权限，避免部分应用强行申请权限</li>
-<li>Android 7.0上通过忽略<code>RUN_IN_BACKGROUND</code>可以避免一直后台运行</li>
-<li>可以控制禁止网络访问(仅Root模式下可用)</li>
+<li>可以控制禁止网络访问（需要 Shizuku 以 root 方式运行）</li>
 </ul></li>
-<li><strong>有哪些使用场景？</strong><br>
-
+<li><strong>有哪些使用场景？</strong>
 <ul>
 <li>想要干净的通知栏？关闭应用使用通知栏权限！</li>
-<li>不想让应用读取手机设备等信息？但是不给权限又不让进去使用怎么办？关闭读取手机状态和身份权限！</li>
+<li>不想让应用读取剪贴板？关闭读取剪贴板权限！</li>
 <li>想让某个应用处于静音状态？使用显示默认权限，然后关闭播放声音的权限！</li>
-<li>不想让应用联网？禁止WiFi/移动数据都可以！</li>
-<li>还有禁止读取通讯录/短信 等等更多使用场景。</li>
+<li>不想让应用联网？禁止 WiFi/移动数据都可以！</li>
+<li>还有禁止读取通讯录/短信等等更多使用场景。</li>
 </ul></li>
 <li><p><strong>这个应用收费吗？</strong><br>
-本应用 <strong>完全免费无广告!</strong> 所有代码开源托管在 <a href="https://github.com/8enet/AppOpsX">https://github.com/8enet/AppOpsX</a></p></li>
-<li><p><strong>如何反馈问题？</strong></p>
-
-<ul>
-<li>可以在GitHub提交 <a href="https://github.com/8enet/AppOpsX/issues">issues</a></li>
-<li>在 <a href="https://play.google.com/store/apps/details?id=com.zzzmode.appopsx">Google Play</a>，<a href="https://www.coolapk.com/apk/com.zzzmode.appopsx">酷安</a> 发表评论</li>
-<li>发送邮件到 <a href="mailto:zlcn2200@yeah.net">zlcn2200@yeah.net</a></li>
-</ul></li>
-<li><p><strong>我能为此应用做些什么？</strong>  </p>
-
-<ul>
-<li>如果你喜欢本应用，可以在<a href="https://play.google.com/store/apps/details?id=com.zzzmode.appopsx">Google Play</a>或者<a href="https://www.coolapk.com/apk/com.zzzmode.appopsx">酷安市场</a>
-给予★★★★★ 5星好评！欢迎评价！</li>
-<li>可以<a href="https://crowdin.com/project/appopsx">帮助此项目翻译和补全更多种类的语言</a></li>
-<li>如果有任何更好的意见，欢迎补充！</li>
-</ul></li>
+本应用 <strong>完全免费无广告！</strong> 所有代码开源托管在 <a href="https://github.com/nlifew/AppOpsX">GitHub</a>。</p></li>
+<li><p><strong>如何反馈问题？</strong><br>
+在 GitHub 提交 <a href="https://github.com/nlifew/AppOpsX/issues">issues</a>，并附上 AppOpsX 设置 → 显示日志 中的信息。</p></li>
 </ol>
 
-<h3 id="toc_1">使用过程中的一些问题</h3>
+<h3 id="toc_1">开始使用</h3>
+
+<p>AppOpsX 需要 Android 13 及以上，并通过 <a href="https://shizuku.rikka.app/">Shizuku</a> 获取修改权限所需的系统权限。</p>
 
 <ol>
-<li><p><strong>出现<code>java.lang.RuntimeException: connect fail!</code> 无法使用怎么办？</strong><br>
-首先请尝试开启设置中的【Root兼容模式】。<br>
-检测是否有出现请求Root权限的弹窗。<br>
-如果没有出现，请尝试退出应用后在SuperSU中默认允许AppOpsX授权然后重试。如果有出现Root授权弹窗后还是出现这个问题，请点击 AppOpsX设置-&gt;关闭后台服务-&gt;退出应用 后重试。<br>
-如果还是一直出现这个问题，请在打开 SuperSU-&gt;设置-&gt;日志记录方式-&gt;选为[全部内容]，然后再在AppOpsX中重试，最后请到SuperSU-&gt;日志中查看最近一条关于AppOpsX的日志，截图提交反馈，谢谢！</p></li>
-<li><p><strong>不想Root手机，怎么使用ADB模式？</strong></p>
-
+<li>安装并启动 Shizuku：
 <ul>
-<li>如果开发者选项中有[网络ADB调试]功能的，请直接打开此选项，然后在AppOpsX中选择使用ADB模式即可。</li>
-<li>没有[网络ADB调试]功能的，需要打开USB调试功能，连接电脑后在终端输入<code>adb tcpip 5555</code> 即可，如果选择使用其他端口，需要在AppOpsX中设置相应端口。</li>
-<li>直接使用脚本启动，从1.1.9版本开始支持脚本方式启动，开启USB调试连接电脑后使用 <code>adb shell sh /sdcard/Android/data/com.zzzmode.appopsx/opsx.sh &amp;</code> </li>
+<li>没有 root：在开发者选项中开启无线调试，然后在 Shizuku 中按提示配对并启动；</li>
+<li>有 root：在 Shizuku 中直接以 root 启动，或者使用 Sui。</li>
 </ul></li>
-<li><p><strong>为什么有一些权限关闭后又自动打开了？</strong><br>
-有一些权限用appops改动并不会生效，所以再次查看的时候会发现又自动打开了。</p></li>
-<li><p><strong>为什么我禁止了WiFi/网络访问，重启后又生效了？</strong><br>
-因为iptables重启失效了，解决方法是在应用配置完成后使用 <strong>导出</strong> 功能导出配置，下次重启后恢复权限配置即可。</p></li>
-<li><p><strong>为什么自动关闭权限有时候在安装完成后没有弹出提示？</strong><br>
-应用被完全停止后收不到新安装广播，所以无法弹出提示，请根据实际情况手动添加白名单。</p></li>
+<li>打开 AppOpsX，在 Shizuku 的授权弹窗中选择允许。</li>
 </ol>
 
-<p>Last Edited on 2017-09-27</p>
+<h3 id="toc_2">使用过程中的一些问题</h3>
 
-
-
-<script type="text/javascript">
-var _self="undefined"!=typeof window?window:"undefined"!=typeof WorkerGlobalScope&&self instanceof WorkerGlobalScope?self:{},Prism=function(){var e=/\blang(?:uage)?-(\w+)\b/i,t=0,n=_self.Prism={util:{encode:function(e){return e instanceof a?new a(e.type,n.util.encode(e.content),e.alias):"Array"===n.util.type(e)?e.map(n.util.encode):e.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/\u00a0/g," ")},type:function(e){return Object.prototype.toString.call(e).match(/\[object (\w+)\]/)[1]},objId:function(e){return e.__id||Object.defineProperty(e,"__id",{value:++t}),e.__id},clone:function(e){var t=n.util.type(e);switch(t){case"Object":var a={};for(var r in e)e.hasOwnProperty(r)&&(a[r]=n.util.clone(e[r]));return a;case"Array":return e.map&&e.map(function(e){return n.util.clone(e)})}return e}},languages:{extend:function(e,t){var a=n.util.clone(n.languages[e]);for(var r in t)a[r]=t[r];return a},insertBefore:function(e,t,a,r){r=r||n.languages;var l=r[e];if(2==arguments.length){a=arguments[1];for(var i in a)a.hasOwnProperty(i)&&(l[i]=a[i]);return l}var o={};for(var s in l)if(l.hasOwnProperty(s)){if(s==t)for(var i in a)a.hasOwnProperty(i)&&(o[i]=a[i]);o[s]=l[s]}return n.languages.DFS(n.languages,function(t,n){n===r[e]&&t!=e&&(this[t]=o)}),r[e]=o},DFS:function(e,t,a,r){r=r||{};for(var l in e)e.hasOwnProperty(l)&&(t.call(e,l,e[l],a||l),"Object"!==n.util.type(e[l])||r[n.util.objId(e[l])]?"Array"!==n.util.type(e[l])||r[n.util.objId(e[l])]||(r[n.util.objId(e[l])]=!0,n.languages.DFS(e[l],t,l,r)):(r[n.util.objId(e[l])]=!0,n.languages.DFS(e[l],t,null,r)))}},plugins:{},highlightAll:function(e,t){var a={callback:t,selector:'code[class*="language-"], [class*="language-"] code, code[class*="lang-"], [class*="lang-"] code'};n.hooks.run("before-highlightall",a);for(var r,l=a.elements||document.querySelectorAll(a.selector),i=0;r=l[i++];)n.highlightElement(r,e===!0,a.callback)},highlightElement:function(t,a,r){for(var l,i,o=t;o&&!e.test(o.className);)o=o.parentNode;o&&(l=(o.className.match(e)||[,""])[1],i=n.languages[l]),t.className=t.className.replace(e,"").replace(/\s+/g," ")+" language-"+l,o=t.parentNode,/pre/i.test(o.nodeName)&&(o.className=o.className.replace(e,"").replace(/\s+/g," ")+" language-"+l);var s=t.textContent,u={element:t,language:l,grammar:i,code:s};if(!s||!i)return n.hooks.run("complete",u),void 0;if(n.hooks.run("before-highlight",u),a&&_self.Worker){var c=new Worker(n.filename);c.onmessage=function(e){u.highlightedCode=e.data,n.hooks.run("before-insert",u),u.element.innerHTML=u.highlightedCode,r&&r.call(u.element),n.hooks.run("after-highlight",u),n.hooks.run("complete",u)},c.postMessage(JSON.stringify({language:u.language,code:u.code,immediateClose:!0}))}else u.highlightedCode=n.highlight(u.code,u.grammar,u.language),n.hooks.run("before-insert",u),u.element.innerHTML=u.highlightedCode,r&&r.call(t),n.hooks.run("after-highlight",u),n.hooks.run("complete",u)},highlight:function(e,t,r){var l=n.tokenize(e,t);return a.stringify(n.util.encode(l),r)},tokenize:function(e,t){var a=n.Token,r=[e],l=t.rest;if(l){for(var i in l)t[i]=l[i];delete t.rest}e:for(var i in t)if(t.hasOwnProperty(i)&&t[i]){var o=t[i];o="Array"===n.util.type(o)?o:[o];for(var s=0;s<o.length;++s){var u=o[s],c=u.inside,g=!!u.lookbehind,h=!!u.greedy,f=0,d=u.alias;u=u.pattern||u;for(var p=0;p<r.length;p++){var m=r[p];if(r.length>e.length)break e;if(!(m instanceof a)){u.lastIndex=0;var y=u.exec(m),v=1;if(!y&&h&&p!=r.length-1){var b=r[p+1].matchedStr||r[p+1],k=m+b;if(p<r.length-2&&(k+=r[p+2].matchedStr||r[p+2]),u.lastIndex=0,y=u.exec(k),!y)continue;var w=y.index+(g?y[1].length:0);if(w>=m.length)continue;var _=y.index+y[0].length,P=m.length+b.length;if(v=3,P>=_){if(r[p+1].greedy)continue;v=2,k=k.slice(0,P)}m=k}if(y){g&&(f=y[1].length);var w=y.index+f,y=y[0].slice(f),_=w+y.length,S=m.slice(0,w),O=m.slice(_),j=[p,v];S&&j.push(S);var A=new a(i,c?n.tokenize(y,c):y,d,y,h);j.push(A),O&&j.push(O),Array.prototype.splice.apply(r,j)}}}}}return r},hooks:{all:{},add:function(e,t){var a=n.hooks.all;a[e]=a[e]||[],a[e].push(t)},run:function(e,t){var a=n.hooks.all[e];if(a&&a.length)for(var r,l=0;r=a[l++];)r(t)}}},a=n.Token=function(e,t,n,a,r){this.type=e,this.content=t,this.alias=n,this.matchedStr=a||null,this.greedy=!!r};if(a.stringify=function(e,t,r){if("string"==typeof e)return e;if("Array"===n.util.type(e))return e.map(function(n){return a.stringify(n,t,e)}).join("");var l={type:e.type,content:a.stringify(e.content,t,r),tag:"span",classes:["token",e.type],attributes:{},language:t,parent:r};if("comment"==l.type&&(l.attributes.spellcheck="true"),e.alias){var i="Array"===n.util.type(e.alias)?e.alias:[e.alias];Array.prototype.push.apply(l.classes,i)}n.hooks.run("wrap",l);var o="";for(var s in l.attributes)o+=(o?" ":"")+s+'="'+(l.attributes[s]||"")+'"';return"<"+l.tag+' class="'+l.classes.join(" ")+'" '+o+">"+l.content+"</"+l.tag+">"},!_self.document)return _self.addEventListener?(_self.addEventListener("message",function(e){var t=JSON.parse(e.data),a=t.language,r=t.code,l=t.immediateClose;_self.postMessage(n.highlight(r,n.languages[a],a)),l&&_self.close()},!1),_self.Prism):_self.Prism;var r=document.currentScript||[].slice.call(document.getElementsByTagName("script")).pop();return r&&(n.filename=r.src,document.addEventListener&&!r.hasAttribute("data-manual")&&document.addEventListener("DOMContentLoaded",n.highlightAll)),_self.Prism}();"undefined"!=typeof module&&module.exports&&(module.exports=Prism),"undefined"!=typeof global&&(global.Prism=Prism);
-</script>
-
+<ol>
+<li><p><strong>提示“Shizuku 未运行”怎么办？</strong><br>
+请先打开 Shizuku 应用确认它已经启动。手机重启后 Shizuku 会停止，需要重新启动。</p></li>
+<li><p><strong>提示“尚未授予 AppOpsX Shizuku 权限”怎么办？</strong><br>
+在 AppOpsX 设置中点击 Shizuku 一项重新申请。如果之前选择了拒绝且不再询问，就不会再弹出授权窗口，请到 Shizuku 应用的授权管理中为 AppOpsX 授权。</p></li>
+<li><p><strong>为什么看不到 WiFi/移动数据的开关？</strong><br>
+联网控制通过 iptables 实现，需要 root 权限。只有 Shizuku 以 root 方式运行时才可用，通过无线调试启动的 Shizuku 不支持。</p></li>
+<li><p><strong>为什么有一些权限关闭后又自动打开了？</strong><br>
+有一些权限用 appops 改动并不会生效，所以再次查看的时候会发现又自动打开了。</p></li>
+<li><p><strong>为什么我禁止了 WiFi/网络访问，重启后又生效了？</strong><br>
+因为 iptables 规则重启后会失效。解决方法是在应用配置完成后使用 <strong>导出</strong> 功能导出配置，下次重启后恢复权限配置即可。</p></li>
+<li><p><strong>“允许后台运行”是什么意思？</strong><br>
+开启后，AppOpsX 退出时，Shizuku 中运行的 AppOpsX 服务会继续保留，下次打开不需要重新启动服务。关闭后，退出 AppOpsX 时服务也会停止。也可以在设置中手动“关闭后台服务”。</p></li>
+<li><p><strong>为什么安装新应用后没有弹出自动关闭权限的提示？</strong><br>
+在 Android 10 及以上的系统上，这个提示目前只有在 AppOpsX 正在前台时才会出现，后续版本会改进。在此之前，请在安装后手动调整新应用的权限。</p></li>
+</ol>
 
 </body>
-
 </html>

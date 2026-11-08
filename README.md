@@ -1,52 +1,55 @@
 ## AppOpsX
-[![Build Status](https://img.shields.io/travis/8enet/AppOpsX.svg)][ci]
-[![Release Version](https://img.shields.io/github/release/8enet/AppOpsX.svg)][releases]
-[![Issues](https://img.shields.io/github/issues/8enet/AppOpsX.svg)][issues]
-[![Software License](https://img.shields.io/github/license/8enet/AppOpsX.svg)][license]
-[![Crowdin](https://d322cqt584bo4o.cloudfront.net/appopsx/localized.svg)][crowdin]
-[![coolapk](https://img.shields.io/badge/coolapk-download-blue.svg)][coolapk]
-[![preview version](https://img.shields.io/badge/preview%20version-download-orange.svg)][preview]
+[![Build](https://github.com/nlifew/AppOpsX/actions/workflows/build.yml/badge.svg)][ci]
+[![Software License](https://img.shields.io/github/license/nlifew/AppOpsX.svg)][license]
 
 AppOpsX is a front-end application for the Android AppOpsService. It allows you to restrict app permissions.
 
-> ROOT or ADB shell is required.
+This is a maintained fork of [8enet/AppOpsX][upstream], which has not been updated since 2019. It has been updated for current Android versions and now uses [Shizuku][shizuku] instead of its own ADB/root server.
+
+> Requires **Android 13 or later** and **[Shizuku][shizuku]** (started via wireless debugging or root, or Sui).
+> For Android 12 and earlier, use the original AppOpsX 1.2.5.
 
 [简体中文](README.zh.md)
 
-[<img src="https://f-droid.org/badge/get-it-on.png"
-     alt="Get it on F-Droid"
-     height="80">](https://f-droid.org/packages/com.zzzmode.appopsx/)
-     
 ## Features
-* Search Applications
+* Search applications
 * Group apps by permissions
 * Import/Export backup file
-* Automatically turn off permissions
+* Permission template for newly installed apps
 * Multi-user support
-* Supports 4.4+
-* And more...
+* Block Wi-Fi / mobile data per app (requires Shizuku running as root)
 
+## Getting started
+1. Install [Shizuku][shizuku] and start it, either through wireless debugging (no root needed) or with root.
+2. Open AppOpsX and allow it in the Shizuku permission dialog.
+   If the dialog does not appear, go to AppOpsX Settings → Shizuku, or grant it in the Shizuku app.
+3. Shizuku has to be started again after every reboot unless your device can start it automatically.
 
+## Building
+Requires JDK 21 (Android Studio's bundled JBR works) and an Android SDK with platform 36.
+
+    ./gradlew assembleDebug
+
+Release builds are signed with the keystore given in the `APPOPSX_KEYSTORE`, `APPOPSX_KEYSTORE_PASSWORD`,
+`APPOPSX_KEY_ALIAS` and `APPOPSX_KEY_PASSWORD` environment variables, or with the debug key if they are not set.
+
+See [docs/MIGRATION.md](docs/MIGRATION.md) (Chinese) for what changed in this fork and what is still pending.
 
 ## Reporting Bugs
-Bug reports and feature requests can be made via the [public issue tracker][issues].
+Bug reports and feature requests can be made via the [issue tracker][issues].
+Please include your Android version, device, and whether Shizuku runs via ADB or root
+(AppOpsX Settings → Show Logs shows this information).
 
 ## Contributing
 Please fork this repository and contribute back using [pull requests][pr].
-
-All contributions, large or small, major features, bug fixes, additional language translations, unit/integration tests are welcomed.
-
-## Translating
-See the [translation page][crowdin] if you would like to contribute.
+Translations are welcome as pull requests to `app/src/main/res/values-*/strings.xml`.
 
 ## License
-AppOpsX is released under the [MIT License][license].
+AppOpsX is released under the [MIT License][license]. Original work by [8enet][upstream].
 
-[pr]: https://github.com/8enet/AppOpsX/pulls
-[issues]: https://github.com/8enet/AppOpsX/issues
-[crowdin]: https://crowdin.com/project/appopsx
-[license]: https://github.com/8enet/AppOpsX/blob/master/LICENSE
-[ci]: https://travis-ci.org/8enet/AppOpsX
-[releases]: https://github.com/8enet/AppOpsX/releases
-[coolapk]: http://www.coolapk.com/apk/com.zzzmode.appopsx
-[preview]: https://www.zzzmode.com/AppOpsX/apk/
+[upstream]: https://github.com/8enet/AppOpsX
+[shizuku]: https://shizuku.rikka.app/
+[pr]: https://github.com/nlifew/AppOpsX/pulls
+[issues]: https://github.com/nlifew/AppOpsX/issues
+[license]: https://github.com/nlifew/AppOpsX/blob/master/LICENSE
+[ci]: https://github.com/nlifew/AppOpsX/actions/workflows/build.yml
