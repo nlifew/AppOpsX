@@ -2,7 +2,11 @@ package com.zzzmode.appopsx.remote;
 
 import com.zzzmode.appopsx.common.Shell;
 import java.io.IOException;
+import java.util.HashSet;
 import java.util.Locale;
+import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * iptables -N appopsx_wifi_reject_list iptables -N appopsx_mobile_reject_list iptables -N
@@ -35,6 +39,7 @@ class IptablesController {
 
 
   private static final String RULE_REJECT = " -m owner --uid-owner %d -j REJECT --reject-with icmp-port-unreachable";
+  private static final Pattern UID_OWNER = Pattern.compile("--uid-owner (\\d+)");
 
   private static final String BW_CHAIN = "appopsx_bw";
   private static final String MOBILE_DATA = "appopsx_mobile_reject_list";
@@ -98,7 +103,6 @@ class IptablesController {
     try {
       Shell.Result result = runIptablesCmd(
           " -C " + String.format(Locale.ENGLISH, rejectList + RULE_REJECT, uid));
-      System.out.println("check  " + result.getMessage() + "   " + result.getStatusCode());
       return result.getStatusCode() == 0;
     } catch (IOException e) {
       e.printStackTrace();
@@ -110,13 +114,32 @@ class IptablesController {
     return shell.exec("iptables " + cmd);
   }
 
-
-  boolean isMobileDataEnable(int uid) {
-    return !check(MOBILE_DATA, uid);
+  /**
+   * 一次列出整条规则链，返回其中被拒绝联网的 uid。
+   * 批量查询时用它代替每个应用单独 -C 检查，否则每个应用都要执行两次 iptables。
+   */
+  private Set<Integer> rejectedUids(String rejectList) {
+    Set<Integer> uids = new HashSet<>();
+    try {
+      Shell.Result result = runIptablesCmd("-S " + rejectList);
+      if (result.getStatusCode() == 0 && result.getMessage() != null) {
+        Matcher matcher = UID_OWNER.matcher(result.getMessage());
+        while (matcher.find()) {
+          uids.add(Integer.parseInt(matcher.group(1)));
+        }
+      }
+    } catch (IOException e) {
+      e.printStackTrace();
+    }
+    return uids;
   }
 
-  boolean isWifiDataEnable(int uid) {
-    return !check(WIFI_DATA, uid);
+  Set<Integer> mobileDataRejectedUids() {
+    return rejectedUids(MOBILE_DATA);
+  }
+
+  Set<Integer> wifiDataRejectedUids() {
+    return rejectedUids(WIFI_DATA);
   }
 
   void setMobileData(int uid, boolean enable) {

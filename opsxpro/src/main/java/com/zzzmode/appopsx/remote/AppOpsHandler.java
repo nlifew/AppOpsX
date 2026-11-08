@@ -8,7 +8,6 @@ import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.os.Process;
 import android.os.ServiceManager;
-import android.util.Log;
 import com.android.internal.app.IAppOpsService;
 import com.zzzmode.appopsx.common.FLog;
 import com.zzzmode.appopsx.common.OpEntry;
@@ -20,6 +19,7 @@ import com.zzzmode.appopsx.common.Shell;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 /**
  * 在 OpsxService 进程（shell/root 身份）中执行的 AppOps 操作。
@@ -49,16 +49,17 @@ class AppOpsHandler {
       int uid = Helper.getPackageUid(packageName, userHandleId);
 
       List opsForPackage = appOpsService.getOpsForPackage(uid, packageName, null);
+      NetRules netRules = NetRules.load();
       ArrayList<PackageOps> packageOpses = new ArrayList<>();
       if (opsForPackage != null) {
         for (Object o : opsForPackage) {
           PackageOps packageOps = ReflectUtils.opsConvert(o);
-          addSupport(appOpsService, packageOps, userHandleId);
+          addSupport(appOpsService, packageOps, userHandleId, netRules);
           packageOpses.add(packageOps);
         }
       } else {
         PackageOps packageOps = new PackageOps(packageName, uid, new ArrayList<OpEntry>());
-        addSupport(appOpsService, packageOps, userHandleId);
+        addSupport(appOpsService, packageOps, userHandleId, netRules);
         packageOpses.add(packageOps);
       }
 
@@ -73,12 +74,13 @@ class AppOpsHandler {
       final IAppOpsService appOpsService = getAppOpsService();
 
       List opsForPackage = appOpsService.getPackagesForOps(ops);
+      NetRules netRules = reqNet ? NetRules.load() : null;
       ArrayList<PackageOps> packageOpses = new ArrayList<>();
 
       if (opsForPackage != null) {
         for (Object o : opsForPackage) {
           PackageOps packageOps = ReflectUtils.opsConvert(o);
-          addSupport(appOpsService, packageOps, userHandleId, reqNet);
+          addSupport(appOpsService, packageOps, userHandleId, netRules);
           packageOpses.add(packageOps);
         }
       }
@@ -118,27 +120,37 @@ class AppOpsHandler {
     return new OpsResult(null, throwable);
   }
 
-  private void addSupport(IAppOpsService appOpsService, PackageOps ops, int userHandleId) {
+  /** 一次请求内的联网规则快照：每条规则链只查询一次，再按 uid 查表 */
+  private static final class NetRules {
 
-    addSupport(appOpsService, ops, userHandleId, true);
+    final Set<Integer> mobileRejected;
+    final Set<Integer> wifiRejected;
+
+    private NetRules(Set<Integer> mobileRejected, Set<Integer> wifiRejected) {
+      this.mobileRejected = mobileRejected;
+      this.wifiRejected = wifiRejected;
+    }
+
+    /** 非 root（没有 iptables 控制）时返回 null */
+    static NetRules load() {
+      if (mIptablesController == null) {
+        return null;
+      }
+      return new NetRules(mIptablesController.mobileDataRejectedUids(),
+          mIptablesController.wifiDataRejectedUids());
+    }
   }
 
-  private void addSupport(IAppOpsService appOpsService, PackageOps ops, int userHandleId, boolean checkNet) {
-    try {
-      if (checkNet && mIptablesController != null) {
-        int mode = mIptablesController.isMobileDataEnable(ops.getUid()) ? AppOpsManager.MODE_ALLOWED
-            : AppOpsManager.MODE_IGNORED;
-        OpEntry opEntry = new OpEntry(OtherOp.OP_ACCESS_PHONE_DATA, mode, 0, 0, 0, 0, null);
-        ops.getOps().add(opEntry);
+  private void addSupport(IAppOpsService appOpsService, PackageOps ops, int userHandleId,
+      NetRules netRules) {
+    if (netRules != null) {
+      int mode = netRules.mobileRejected.contains(ops.getUid()) ? AppOpsManager.MODE_IGNORED
+          : AppOpsManager.MODE_ALLOWED;
+      ops.getOps().add(new OpEntry(OtherOp.OP_ACCESS_PHONE_DATA, mode, 0, 0, 0, 0, null));
 
-        mode = mIptablesController.isWifiDataEnable(ops.getUid()) ? AppOpsManager.MODE_ALLOWED
-            : AppOpsManager.MODE_IGNORED;
-        opEntry = new OpEntry(OtherOp.OP_ACCESS_WIFI_NETWORK, mode, 0, 0, 0, 0, null);
-        ops.getOps().add(opEntry);
-      }
-    } catch (Exception e) {
-      e.printStackTrace();
-      System.out.println(Log.getStackTraceString(e));
+      mode = netRules.wifiRejected.contains(ops.getUid()) ? AppOpsManager.MODE_IGNORED
+          : AppOpsManager.MODE_ALLOWED;
+      ops.getOps().add(new OpEntry(OtherOp.OP_ACCESS_WIFI_NETWORK, mode, 0, 0, 0, 0, null));
     }
     try {
       PackageInfo packageInfo = ActivityThread.getPackageManager()
