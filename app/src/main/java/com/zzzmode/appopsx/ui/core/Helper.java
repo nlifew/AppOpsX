@@ -24,7 +24,7 @@ import androidx.core.text.BidiFormatter;
 import androidx.core.util.Pair;
 import com.zzzmode.appopsx.BuildConfig;
 import com.zzzmode.appopsx.R;
-import com.zzzmode.appopsx.common.FixCompat;
+import com.zzzmode.appopsx.common.OpsTable;
 import com.zzzmode.appopsx.common.OpEntry;
 import com.zzzmode.appopsx.common.OpsResult;
 import com.zzzmode.appopsx.common.OtherOp;
@@ -1091,26 +1091,28 @@ public class Helper {
 
   private static final List<OpEntryInfo> sOpEntryInfoList = new ArrayList<>();
 
-  /** 构建缓存时用的 op 表；连上服务后表会被换成系统实际的表，这时要重建缓存 */
-  private static String[] sOpEntryInfoSource = null;
+  /** 缓存对应的 op 表；按对象判断，换了表自然就会重建 */
+  private static OpsTable sOpEntryInfoTable = null;
 
-  public static synchronized List<OpEntryInfo> getLocalOpEntryInfos(Context context) {
-    String[] sOpNames = FixCompat.sOpNames();
-    if (sOpNames != sOpEntryInfoSource) {
+  /**
+   * op 表里每个 op 对应一条（下标就是 op 编号），opEntry 中存的是它的开关 op。
+   * 会逐个查询权限的名称和描述，应在后台线程调用。
+   */
+  public static synchronized List<OpEntryInfo> getLocalOpEntryInfos(Context context,
+      OpsTable table) {
+    if (table != sOpEntryInfoTable) {
       sOpEntryInfoList.clear();
-      sOpEntryInfoSource = sOpNames;
+      sOpEntryInfoTable = table;
     }
     if (sOpEntryInfoList.isEmpty()) {
-      int[] sOpToSwitch = FixCompat.sOpToSwitch();
-      String[] sOpPerms = FixCompat.sOpPerms();
-      int len = sOpPerms.length;
+      int len = table.size();
       PackageManager pm = context.getPackageManager();
       for (int i = 0; i < len; i++) {
-        OpEntry entry = new OpEntry(sOpToSwitch[i], AppOpsManager.MODE_ALLOWED, 0, 0, 0, 0, null);
+        OpEntry entry = new OpEntry(table.switches[i], AppOpsManager.MODE_ALLOWED, 0, 0, 0, 0, null);
         OpEntryInfo opEntryInfo = new OpEntryInfo(entry);
-        opEntryInfo.opName = sOpNames[i];
+        opEntryInfo.opName = table.names[i];
         try {
-          PermissionInfo permissionInfo = pm.getPermissionInfo(sOpPerms[i], 0);
+          PermissionInfo permissionInfo = pm.getPermissionInfo(table.permissions[i], 0);
           opEntryInfo.opPermsLab = String.valueOf(permissionInfo.loadLabel(pm));
           opEntryInfo.opPermsDesc = String.valueOf(permissionInfo.loadDescription(pm));
         } catch (PackageManager.NameNotFoundException e) {

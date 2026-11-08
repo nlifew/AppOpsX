@@ -177,7 +177,12 @@ export JAVA_HOME=".../Android Studio/jbr"
 
 **后续完成的**
 
-- **op 表改为运行时读取**：`OpsxService` 启动时通过 `_NUM_OP`、`opToName`、`opToSwitch`、`opToPermission` 读取当前系统的表，自己使用，并通过新增的 `IOpsxService.getOpsTable()` 交给 app（app 进程受隐藏 API 限制，读不了这些成员）。连上服务之前，app 仍使用内置的 Android 9 表；表被替换后，由它派生的缓存（`Helper.getLocalOpEntryInfos`、`remote/Helper.permissionToCode`、`OpEntryInfo`）会重建。Xiaomi 13 上读到 121 个 op，旧表只有 78 个。
+- **op 表改为运行时读取**：`OpsxService` 启动时通过 `_NUM_OP`、`opToName`、`opToSwitch`、`opToPermission` 读取当前系统的表，通过 `IOpsxService.getOpsTable()` 交给 app（app 进程受隐藏 API 限制读不了这些成员）。Xiaomi 13 上读到 121 个 op，旧表只有 78 个。
+  - **不再有内置的旧表**：`FixCompat`（Android 9 的表）已删除。服务读不到表时 `getOpsTable()` 直接报错，不使用不完整的表。
+  - **按设备指纹缓存**（`OpsTableCache`）：缓存键是 `Build.FINGERPRINT` 加缓存格式版本，进程启动时加载。系统升级后指纹变化，缓存作废，不使用过期数据。每次连上服务都会核对，不一致就覆盖。
+  - **什么时候等这张表**：服务返回的权限数据在 `OpsxManager` 准备好表之后才交给 UI，所以不需要额外等待。唯一在连上服务之前就要用到表的是“自动忽略权限模板”对话框：缓存命中时直接显示；未命中时先显示加载框、连接服务，失败时按原因提示，并提供跳转到 Shizuku 设置的按钮。
+  - **派生数据**（权限 → 开关 op 的映射）放在 `OpsTable` 对象上，换表时随旧对象一起失效，不再依赖各处的静态缓存各自重建。
+  - Xiaomi 13 上验证过：首次冷启动填充缓存，第二次冷启动命中缓存且与服务一致。
 - **iptables 查询**：每条规则链只执行一次 `iptables -S`，再按 uid 查表，不再对每个应用执行两次 `iptables -C`。
 - **`IAppOpsService` 桩**：只保留实际用到的 5 个方法（都在 `AppOpsHandler` 里调用），按 Android 13 核对过签名。删掉了没人调用、而且签名从 Android 11 起就不对的 `noteOperation` 等方法。
 

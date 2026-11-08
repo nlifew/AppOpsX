@@ -1,7 +1,7 @@
 package com.zzzmode.appopsx.ui.model;
 
 import android.app.AppOpsManager;
-import com.zzzmode.appopsx.common.FixCompat;
+import com.zzzmode.appopsx.common.OpsTable;
 import com.zzzmode.appopsx.common.OpEntry;
 
 /**
@@ -23,13 +23,12 @@ public class OpEntryInfo {
     if (opEntry != null) {
       this.opEntry = opEntry;
       this.mode = opEntry.getMode();
-      // 每次都取当前的表：连上服务前后表的长度会变（内置的 Android 9 表 → 系统实际的表）
-      String[] sOpNames = FixCompat.sOpNames();
-      String[] sOpPerms = FixCompat.sOpPerms();
+      // OpEntry 都来自服务返回的结果，OpsxManager 在返回结果前已经准备好了表
+      OpsTable table = OpsTable.current();
       int op = opEntry.getOp();
-      if (op >= 0 && op < sOpNames.length) {
-        this.opName = sOpNames[op];
-        this.opPermsName = sOpPerms[op];
+      if (table != null && op >= 0 && op < table.size()) {
+        this.opName = table.names[op];
+        this.opPermsName = table.permissions[op];
       }
     }
   }

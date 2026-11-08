@@ -27,12 +27,14 @@ import androidx.preference.PreferenceScreen;
 import androidx.recyclerview.widget.RecyclerView.Adapter;
 import com.zzzmode.appopsx.BuildConfig;
 import com.zzzmode.appopsx.R;
+import com.zzzmode.appopsx.common.OpsTable;
 import com.zzzmode.appopsx.ui.BaseActivity;
 import com.zzzmode.appopsx.ui.core.AppOpsx;
 import com.zzzmode.appopsx.ui.core.Helper;
 import com.zzzmode.appopsx.ui.core.LangHelper;
 import com.zzzmode.appopsx.ui.core.ShizukuHelper;
 import com.zzzmode.appopsx.ui.model.OpEntryInfo;
+import io.reactivex.Single;
 import io.reactivex.SingleEmitter;
 import io.reactivex.SingleObserver;
 import io.reactivex.SingleOnSubscribe;
@@ -42,6 +44,7 @@ import io.reactivex.internal.operators.single.SingleJust;
 import io.reactivex.schedulers.Schedulers;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.Callable;
 import rikka.shizuku.Shizuku;
 
 /**
@@ -270,7 +273,74 @@ public class SettingsActivity extends BaseActivity {
       });
     }
 
+    /**
+     * 模板需要当前系统的 op 表。缓存命中时直接在后台整理列表；未命中时要连接服务，
+     * 先显示加载框，失败时按原因提示，不影响设置页的其他功能。
+     */
     private void showPremissionTemplete() {
+      final Context context = getActivity().getApplicationContext();
+      final AlertDialog loading = OpsTable.current() != null ? null
+          : new AlertDialog.Builder(getActivity())
+              .setTitle(R.string.auto_ignore_permission_title)
+              .setView(R.layout.dialog_loading)
+              .setNegativeButton(android.R.string.cancel, null)
+              .show();
+
+      Single.fromCallable(new Callable<List<OpEntryInfo>>() {
+        @Override
+        public List<OpEntryInfo> call() throws Exception {
+          OpsTable table = AppOpsx.getInstance(context).getOpsTable();
+          return Helper.getLocalOpEntryInfos(context, table);
+        }
+      }).subscribeOn(Schedulers.io())
+          .observeOn(AndroidSchedulers.mainThread())
+          .subscribe(new SingleObserver<List<OpEntryInfo>>() {
+            @Override
+            public void onSubscribe(Disposable d) {
+              if (loading != null) {
+                loading.setOnCancelListener(dialog -> d.dispose());
+                loading.setOnDismissListener(dialog -> d.dispose());
+              }
+            }
+
+            @Override
+            public void onSuccess(List<OpEntryInfo> infos) {
+              if (loading != null) {
+                loading.setOnDismissListener(null);
+                loading.dismiss();
+              }
+              if (isAdded()) {
+                showPremissionTemplete(infos);
+              }
+            }
+
+            @Override
+            public void onError(Throwable e) {
+              if (loading != null) {
+                loading.setOnDismissListener(null);
+                loading.dismiss();
+              }
+              if (isAdded()) {
+                showTemplateError(e);
+              }
+            }
+          });
+    }
+
+    private void showTemplateError(Throwable e) {
+      String msg = ShizukuHelper.errorMessage(getContext(), e);
+      AlertDialog.Builder builder = new AlertDialog.Builder(getActivity())
+          .setTitle(R.string.auto_ignore_permission_title)
+          .setMessage(msg != null ? msg : String.valueOf(e.getMessage()))
+          .setNegativeButton(android.R.string.cancel, null);
+      // 只有 Shizuku 没运行或没授权时，跳到 Shizuku 那一项才有用
+      if (!ShizukuHelper.isGranted()) {
+        builder.setPositiveButton(R.string.shizuku, (dialog, which) -> onShizukuStatusClick());
+      }
+      builder.show();
+    }
+
+    private void showPremissionTemplete(List<OpEntryInfo> localOpEntryInfos) {
 
       AlertDialog.Builder builder =
           new AlertDialog.Builder(getActivity());
@@ -278,7 +348,6 @@ public class SettingsActivity extends BaseActivity {
       // 列表下标 i 就是 op 编号，opEntry 里存的是它的开关 op。多个 op 共用一个开关时，
       // 对话框里只显示一行（用开关 op 自己的名称），保存时展开成组内所有 op，
       // 这样保存的格式（op 编号列表）和以前一致，已有的模板和 default_ignored 都不受影响
-      List<OpEntryInfo> localOpEntryInfos = Helper.getLocalOpEntryInfos(getActivity());
       final List<List<Integer>> rows = new ArrayList<>();
       List<CharSequence> labels = new ArrayList<>();
       SparseIntArray switchToRow = new SparseIntArray();

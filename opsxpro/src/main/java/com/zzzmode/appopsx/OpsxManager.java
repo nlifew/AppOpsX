@@ -13,7 +13,6 @@ import android.os.Process;
 import android.util.Log;
 import com.zzzmode.android.opsxpro.BuildConfig;
 import com.zzzmode.appopsx.ServiceUnavailableException.Reason;
-import com.zzzmode.appopsx.common.FixCompat;
 import com.zzzmode.appopsx.common.OpEntry;
 import com.zzzmode.appopsx.common.OpsResult;
 import com.zzzmode.appopsx.common.OpsTable;
@@ -42,6 +41,8 @@ public class OpsxManager {
   private final Context mContext;
 
   private final Config mConfig;
+
+  private final OpsTableCache mTableCache;
 
   private int userId;
 
@@ -76,6 +77,9 @@ public class OpsxManager {
     mContext = context.getApplicationContext();
     mConfig = config;
     userId = Process.myUid() / 100000; //android.os.UserHandle.myUserId()
+    mTableCache = new OpsTableCache(mContext);
+    // 同一系统版本的表不变，缓存命中时这个进程里基本不会再换表
+    OpsTable.setCurrent(mTableCache.load());
   }
 
   public void setUserHandleId(int uid) {
@@ -138,12 +142,36 @@ public class OpsxManager {
     if (service == null) {
       throw new ServiceUnavailableException(Reason.BIND_TIMEOUT);
     }
-    // app 进程无法直接读取当前系统的 op 表（隐藏 API 限制），由服务进程读好后传过来
-    OpsTable table = service.getOpsTable();
-    if (table != null) {
-      FixCompat.setOpsTable(table);
-    }
+    // 先把表准备好再返回：之后拿到的结果都要靠它解析 op
+    syncOpsTable(service);
     return service;
+  }
+
+  /**
+   * app 进程读不了系统的 op 表（隐藏 API 限制），由服务进程读好后传过来。
+   * 每次连上服务都核对：缓存为空或与系统不一致（例如指纹没变但框架被模块改过）时覆盖。
+   */
+  private void syncOpsTable(IOpsxService service) throws Exception {
+    OpsTable table = service.getOpsTable();
+    if (!table.equals(OpsTable.current())) {
+      Log.i(TAG, "op table updated, size: " + table.size());
+      OpsTable.setCurrent(table);
+      mTableCache.save(table);
+    }
+  }
+
+  /**
+   * 当前系统的 op 表。缓存命中时直接返回，否则连接服务获取（会阻塞，不能在主线程调用）。
+   *
+   * @throws ServiceUnavailableException 缓存未命中且连不上服务
+   */
+  public OpsTable getOpsTable() throws Exception {
+    OpsTable table = OpsTable.current();
+    if (table != null) {
+      return table;
+    }
+    getService();
+    return OpsTable.current();
   }
 
   private static void waitForShizukuBinder() throws Exception {

@@ -11,7 +11,6 @@ import android.os.IUserManager;
 import android.os.ServiceManager;
 import android.util.Log;
 import com.zzzmode.appopsx.IOpsxService;
-import com.zzzmode.appopsx.common.FixCompat;
 import com.zzzmode.appopsx.common.OpsResult;
 import com.zzzmode.appopsx.common.OpsTable;
 import com.zzzmode.appopsx.common.ParcelableListSlice;
@@ -34,11 +33,11 @@ public class OpsxService extends IOpsxService.Stub {
   public OpsxService() {
     Log.i(TAG, "started, uid: " + android.os.Process.myUid());
     mOpsTable = loadOpsTable();
-    // 本进程里 permissionToCode 等也要用到最新的表
-    FixCompat.setOpsTable(mOpsTable);
+    // 本进程里 permissionToCode 也要用到这张表
+    OpsTable.setCurrent(mOpsTable);
   }
 
-  /** 读取失败时返回 null，两边都会退回 FixCompat 内置的 Android 9 表 */
+  /** 读取失败时返回 null，getOpsTable() 会把失败报给客户端，不使用不完整的表 */
   private static OpsTable loadOpsTable() {
     try {
       Class<?> cls = AppOpsManager.class;
@@ -70,6 +69,10 @@ public class OpsxService extends IOpsxService.Stub {
 
   @Override
   public OpsTable getOpsTable() {
+    if (mOpsTable == null) {
+      // IllegalStateException 能通过 binder 传回客户端
+      throw new IllegalStateException("failed to read the op table from AppOpsManager");
+    }
     return mOpsTable;
   }
 

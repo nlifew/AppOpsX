@@ -1,16 +1,13 @@
 package com.zzzmode.appopsx.remote;
 
 import android.app.ActivityThread;
-import android.app.AppOpsManager;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
 import android.os.UserHandle;
-import com.zzzmode.appopsx.common.FixCompat;
+import com.zzzmode.appopsx.common.OpsTable;
 import com.zzzmode.appopsx.common.ReflectUtils;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 /**
  * Created by zl on 2017/1/15.
@@ -44,30 +41,10 @@ class Helper {
     return uid;
   }
 
-  private static Map<String, Integer> sRuntimePermToOp = null;
-  /** 构建 sRuntimePermToOp 时用的表，表被替换后要重建 */
-  private static String[] sRuntimePermToOpSource = null;
-
-  static synchronized int permissionToCode(String permission) {
-    if (sRuntimePermToOp == null || sRuntimePermToOpSource != FixCompat.sOpPerms()) {
-      sRuntimePermToOp = new HashMap<>();
-      String[] opPerms = FixCompat.sOpPerms();
-      sRuntimePermToOpSource = opPerms;
-      int[] opToSwitch = FixCompat.sOpToSwitch();
-
-      if (opPerms != null && opToSwitch != null && opPerms.length == opToSwitch.length) {
-        for (int i = 0; i < opToSwitch.length; i++) {
-          if (opPerms[i] != null) {
-            sRuntimePermToOp.put(opPerms[i], opToSwitch[i]);
-          }
-        }
-      }
-    }
-    Integer code = sRuntimePermToOp.get(permission);
-    if (code != null) {
-      return code;
-    }
-    return -1;
+  /** 权限对应的开关 op；表没读到（OpsxService 已经把失败报给客户端）或没有对应 op 时返回 -1 */
+  static int permissionToCode(String permission) {
+    OpsTable table = OpsTable.current();
+    return table != null ? table.permissionToSwitchOp(permission) : -1;
   }
 
 }
