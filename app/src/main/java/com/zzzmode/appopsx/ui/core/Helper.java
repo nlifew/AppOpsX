@@ -1094,10 +1094,19 @@ public class Helper {
   private static final SparseIntArray sAllOps = new SparseIntArray();
   private static final List<OpEntryInfo> sOpEntryInfoList = new ArrayList<>();
 
-  public static List<OpEntryInfo> getLocalOpEntryInfos(Context context) {
+  /** 构建缓存时用的 op 表；连上服务后表会被换成系统实际的表，这时要重建缓存 */
+  private static String[] sOpEntryInfoSource = null;
+
+  public static synchronized List<OpEntryInfo> getLocalOpEntryInfos(Context context) {
+    String[] sOpNames = FixCompat.sOpNames();
+    if (sOpNames != sOpEntryInfoSource) {
+      sOpEntryInfo.clear();
+      sAllOps.clear();
+      sOpEntryInfoList.clear();
+      sOpEntryInfoSource = sOpNames;
+    }
     if (sOpEntryInfoList.isEmpty()) {
       int[] sOpToSwitch = FixCompat.sOpToSwitch();
-      String[] sOpNames = FixCompat.sOpNames();
       String[] sOpPerms = FixCompat.sOpPerms();
       int len = sOpPerms.length;
       PackageManager pm = context.getPackageManager();

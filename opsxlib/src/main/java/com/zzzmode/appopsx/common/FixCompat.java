@@ -1,9 +1,7 @@
 package com.zzzmode.appopsx.common;
 
 import android.Manifest;
-import android.app.AppOpsManager;
 import android.app.usage.UsageStatsManager;
-import android.os.Build;
 
 public final class FixCompat {
   /**  No operation specified. */
@@ -417,42 +415,30 @@ public final class FixCompat {
       null, // no permission for OP_BLUETOOTH_SCAN
   };
 
-  private static int[] ref_sOpToSwitch = null;
-  private static String[] ref_sOpNames = null;
-  private static String[] ref_sOpPerms = null;
+  /**
+   * 从系统读取的 op 表。服务进程启动时自己读取；app 进程在连上服务后由 OpsxManager 设置。
+   * 设置之前使用上面从 Android 9 抄来的表：op 编号只会往后追加，所以这张表覆盖的部分仍然正确，
+   * 只是缺少之后新增的 op。
+   */
+  private static volatile OpsTable sOpsTable = null;
 
+  public static void setOpsTable(OpsTable table) {
+    sOpsTable = table;
+  }
 
   public static int[] sOpToSwitch(){
-    if (Build.VERSION.SDK_INT >= 28){
-      return _sOpToSwitch;
-    }else {
-      if (ref_sOpToSwitch == null){
-        ref_sOpToSwitch = (int[]) ReflectUtils.getFieldValue(AppOpsManager.class, "sOpToSwitch");
-      }
-      return ref_sOpToSwitch;
-    }
+    OpsTable table = sOpsTable;
+    return table != null ? table.switches : _sOpToSwitch;
   }
 
   public static String[] sOpNames(){
-    if (Build.VERSION.SDK_INT >= 28){
-      return _sOpNames;
-    }else {
-      if (ref_sOpNames == null){
-        ref_sOpNames = (String[]) ReflectUtils.getFieldValue(AppOpsManager.class, "sOpNames");
-      }
-      return ref_sOpNames;
-    }
+    OpsTable table = sOpsTable;
+    return table != null ? table.names : _sOpNames;
   }
 
   public static String[] sOpPerms(){
-    if (Build.VERSION.SDK_INT >= 28){
-      return _sOpPerms;
-    }else {
-      if (ref_sOpPerms == null){
-        ref_sOpPerms = (String[]) ReflectUtils.getFieldValue(AppOpsManager.class, "sOpPerms");
-      }
-      return ref_sOpPerms;
-    }
+    OpsTable table = sOpsTable;
+    return table != null ? table.permissions : _sOpPerms;
   }
 
 

@@ -10,8 +10,6 @@ import com.zzzmode.appopsx.common.OpEntry;
 
 public class OpEntryInfo {
 
-  private static Integer sMaxLength = null;
-
   public OpEntry opEntry;
   public String opName;
   public String opPermsName;
@@ -25,23 +23,13 @@ public class OpEntryInfo {
     if (opEntry != null) {
       this.opEntry = opEntry;
       this.mode = opEntry.getMode();
+      // 每次都取当前的表：连上服务前后表的长度会变（内置的 Android 9 表 → 系统实际的表）
       String[] sOpNames = FixCompat.sOpNames();
-      if (sMaxLength == null && sOpNames != null) {
-        sMaxLength = sOpNames.length;
-      }
-
-      if (opEntry.getOp() < sMaxLength) {
-        String[] sOpPerms = FixCompat.sOpPerms();
-
-        if (sOpNames != null) {
-          this.opName = sOpNames[opEntry.getOp()];
-        }
-        if (sOpPerms != null) {
-          this.opPermsName = sOpPerms[opEntry.getOp()];
-        }
-
-
-
+      String[] sOpPerms = FixCompat.sOpPerms();
+      int op = opEntry.getOp();
+      if (op >= 0 && op < sOpNames.length) {
+        this.opName = sOpNames[op];
+        this.opPermsName = sOpPerms[op];
       }
     }
   }

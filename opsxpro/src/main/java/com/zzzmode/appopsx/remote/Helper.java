@@ -45,11 +45,14 @@ class Helper {
   }
 
   private static Map<String, Integer> sRuntimePermToOp = null;
+  /** 构建 sRuntimePermToOp 时用的表，表被替换后要重建 */
+  private static String[] sRuntimePermToOpSource = null;
 
-  static int permissionToCode(String permission) {
-    if (sRuntimePermToOp == null) {
+  static synchronized int permissionToCode(String permission) {
+    if (sRuntimePermToOp == null || sRuntimePermToOpSource != FixCompat.sOpPerms()) {
       sRuntimePermToOp = new HashMap<>();
       String[] opPerms = FixCompat.sOpPerms();
+      sRuntimePermToOpSource = opPerms;
       int[] opToSwitch = FixCompat.sOpToSwitch();
 
       if (opPerms != null && opToSwitch != null && opPerms.length == opToSwitch.length) {

@@ -1,6 +1,7 @@
 package com.zzzmode.appopsx;
 
 import com.zzzmode.appopsx.common.OpsResult;
+import com.zzzmode.appopsx.common.OpsTable;
 import com.zzzmode.appopsx.common.ParcelableListSlice;
 
 // 由 Shizuku 以 shell/root 身份运行的服务，实现见 OpsxService
@@ -22,4 +23,7 @@ interface IOpsxService {
 
     // List<android.content.pm.UserInfo>
     ParcelableListSlice getUsers(boolean excludeDying) = 6;
+
+    // 当前系统的 op 名称、开关、权限表
+    OpsTable getOpsTable() = 7;
 }

@@ -13,8 +13,10 @@ import android.os.Process;
 import android.util.Log;
 import com.zzzmode.android.opsxpro.BuildConfig;
 import com.zzzmode.appopsx.ServiceUnavailableException.Reason;
+import com.zzzmode.appopsx.common.FixCompat;
 import com.zzzmode.appopsx.common.OpEntry;
 import com.zzzmode.appopsx.common.OpsResult;
+import com.zzzmode.appopsx.common.OpsTable;
 import com.zzzmode.appopsx.common.PackageOps;
 import com.zzzmode.appopsx.common.ParcelableListSlice;
 import com.zzzmode.appopsx.remote.OpsxService;
@@ -135,6 +137,11 @@ public class OpsxManager {
     service = mService;
     if (service == null) {
       throw new ServiceUnavailableException(Reason.BIND_TIMEOUT);
+    }
+    // app 进程无法直接读取当前系统的 op 表（隐藏 API 限制），由服务进程读好后传过来
+    OpsTable table = service.getOpsTable();
+    if (table != null) {
+      FixCompat.setOpsTable(table);
     }
     return service;
   }
